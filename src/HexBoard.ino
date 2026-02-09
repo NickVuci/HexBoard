@@ -251,7 +251,6 @@ byte playbackMode = SYNTH_OFF;
 byte currWave = WAVEFORM_HYBRID;
 
 #define RAINBOW_MODE 0
-#define TIERED_COLOR_MODE 1
 #define ALTERNATE_COLOR_MODE 2
 #define RAINBOW_OF_FIFTHS_MODE 3
 #define PIANO_ALT_COLOR_MODE 4
@@ -300,33 +299,20 @@ byte globalBrightness = BRIGHT_DIM;
     presets without requiring an enumeration.
   */
 #define TUNING_12EDO 0
-#define TUNING_12EDO_ZETA 1
-#define TUNING_17EDO 2
-#define TUNING_19EDO 3
-#define TUNING_22EDO 4
-#define TUNING_24EDO 5
-#define TUNING_31EDO 6
-#define TUNING_31EDO_ZETA 7
-#define TUNING_41EDO 8
-#define TUNING_43EDO 9
-#define TUNING_46EDO 10
-#define TUNING_53EDO 11
-#define TUNING_58EDO 12
-#define TUNING_58EDO_ZETA 13
-#define TUNING_72EDO 14
-#define TUNING_72EDO_ZETA 15
-#define TUNING_80EDO 16
-#define TUNING_87EDO 17
-#define TUNING_BP    18
-#define TUNING_ALPHA 19
-#define TUNING_BETA  20
-#define TUNING_GAMMA 21
-#define TUNING_CUSTOM_1 22
-#define TUNING_CUSTOM_2 23
-#define TUNING_CUSTOM_3 24
-#define TUNING_CUSTOM_4 25
-#define TUNINGCOUNT  26
-#define CUSTOM_TUNING_COUNT 4
+#define TUNING_CUSTOM_1 1
+#define TUNING_CUSTOM_2 2
+#define TUNING_CUSTOM_3 3
+#define TUNING_CUSTOM_4 4
+#define TUNING_CUSTOM_5 5
+#define TUNING_CUSTOM_6 6
+#define TUNING_CUSTOM_7 7
+#define TUNING_CUSTOM_8 8
+#define TUNING_CUSTOM_9 9
+#define TUNING_CUSTOM_10 10
+#define TUNING_CUSTOM_11 11
+#define TUNING_CUSTOM_12 12
+#define TUNINGCOUNT  13
+#define CUSTOM_TUNING_COUNT 12
 #define CUSTOM_LAYOUTS_PER_TUNING 5
 /*
     Note names and palette arrays are allocated in memory
@@ -429,32 +415,19 @@ EnvelopeParams envelopeParams;
   */
 tuningDef tuningOptions[] = {
   { "12 EDO (Normal)", 12, 100.000, { { "C", -9 }, { "C#", -8 }, { "D", -7 }, { "Eb", -6 }, { "E", -5 }, { "F", -4 }, { "F#", -3 }, { "G", -2 }, { "G#", -1 }, { "A", 0 }, { "Bb", 1 }, { "B", 2 } } },
-  { "12 TET 34 ZPI", 12, 99.8071807833375, { { "C", -9 }, { "C#", -8 }, { "D", -7 }, { "Eb", -6 }, { "E", -5 }, { "F", -4 }, { "F#", -3 }, { "G", -2 }, { "G#", -1 }, { "A", 0 }, { "Bb", 1 }, { "B", 2 } } },
-  { "17 EDO", 17, 1200.0 / 17.0, { { "C", -13 }, { "Db", -12 }, { "C#", -11 }, { "D", -10 }, { "Eb", -9 }, { "D#", -8 }, { "E", -7 }, { "F", -6 }, { "Gb", -5 }, { "F#", -4 }, { "G", -3 }, { "Ab", -2 }, { "G#", -1 }, { "A", 0 }, { "Bb", 1 }, { "A#", 2 }, { "B", 3 } } },
-  { "19 EDO", 19, 1200.0 / 19.0, { { "C", -14 }, { "C#", -13 }, { "Db", -12 }, { "D", -11 }, { "D#", -10 }, { "Eb", -9 }, { "E", -8 }, { "E#", -7 }, { "F", -6 }, { "F#", -5 }, { "Gb", -4 }, { "G", -3 }, { "G#", -2 }, { "Ab", -1 }, { "A", 0 }, { "A#", 1 }, { "Bb", 2 }, { "B", 3 }, { "Cb", 4 } } },
-  { "22 EDO", 22, 1200.0 / 22.0, { { " C", -17 }, { "^C", -16 }, { "vC#", -15 }, { "vD", -14 }, { " D", -13 }, { "^D", -12 }, { "^Eb", -11 }, { "vE", -10 }, { " E", -9 }, { " F", -8 }, { "^F", -7 }, { "vF#", -6 }, { "vG", -5 }, { " G", -4 }, { "^G", -3 }, { "vG#", -2 }, { "vA", -1 }, { " A", 0 }, { "^A", 1 }, { "^Bb", 2 }, { "vB", 3 }, { " B", 4 } } },
-  { "24 EDO", 24, 1200.0 / 24.0, { { "C", -18 }, { "C+", -17 }, { "C#", -16 }, { "Dd", -15 }, { "D", -14 }, { "D+", -13 }, { "Eb", -12 }, { "Ed", -11 }, { "E", -10 }, { "E+", -9 }, { "F", -8 }, { "F+", -7 }, { "F#", -6 }, { "Gd", -5 }, { "G", -4 }, { "G+", -3 }, { "G#", -2 }, { "Ad", -1 }, { "A", 0 }, { "A+", 1 }, { "Bb", 2 }, { "Bd", 3 }, { "B", 4 }, { "Cd", 5 } } },
-  { "31 EDO", 31, 1200.0 / 31.0, { { "C", -23 }, { "C+", -22 }, { "C#", -21 }, { "Db", -20 }, { "Dd", -19 }, { "D", -18 }, { "D+", -17 }, { "D#", -16 }, { "Eb", -15 }, { "Ed", -14 }, { "E", -13 }, { "E+", -12 }, { "Fd", -11 }, { "F", -10 }, { "F+", -9 }, { "F#", -8 }, { "Gb", -7 }, { "Gd", -6 }, { "G", -5 }, { "G+", -4 }, { "G#", -3 }, { "Ab", -2 }, { "Ad", -1 }, { "A", 0 }, { "A+", 1 }, { "A#", 2 }, { "Bb", 3 }, { "Bd", 4 }, { "B", 5 }, { "B+", 6 }, { "Cd", 7 } } },
-  { "31 TET 127 ZPI", 31, 1200.0 / 30.9783816349790, { { "C", -23 }, { "C+", -22 }, { "C#", -21 }, { "Db", -20 }, { "Dd", -19 }, { "D", -18 }, { "D+", -17 }, { "D#", -16 }, { "Eb", -15 }, { "Ed", -14 }, { "E", -13 }, { "E+", -12 }, { "Fd", -11 }, { "F", -10 }, { "F+", -9 }, { "F#", -8 }, { "Gb", -7 }, { "Gd", -6 }, { "G", -5 }, { "G+", -4 }, { "G#", -3 }, { "Ab", -2 }, { "Ad", -1 }, { "A", 0 }, { "A+", 1 }, { "A#", 2 }, { "Bb", 3 }, { "Bd", 4 }, { "B", 5 }, { "B+", 6 }, { "Cd", 7 } } },
-  { "41 EDO", 41, 1200.0 / 41.0, { { " C", -31 }, { "^C", -30 }, { " C+", -29 }, { " Db", -28 }, { " C#", -27 }, { " Dd", -26 }, { "vD", -24 }, { " D", -24 }, { "^D", -23 }, { " D+", -22 }, { " Eb", -21 }, { " D#", -20 }, { " Ed", -19 }, { "vE", -18 }, { " E", -17 }, { "^E", -16 }, { "vF", -15 }, { " F", -14 }, { "^F", -13 }, { " F+", -12 }, { " Gb", -11 }, { " F#", -10 }, { " Gd", -9 }, { "vG", -8 }, { " G", -7 }, { "^G", -6 }, { " G+", -5 }, { " Ab", -4 }, { " G#", -3 }, { " Ad", -2 }, { "vA", -1 }, { " A", 0 }, { "^A", 1 }, { " A+", 2 }, { " Bb", 3 }, { " A#", 4 }, { " Bd", 5 }, { "vB", 6 }, { " B", 7 }, { "^B", 8 }, { "vC", 9 } } },
-  { "43 EDO", 43, 1200.0 / 43.0, { { " C", -32 }, { "C+1", -31 }, { "C+2", -30 }, { "C+3", -29 }, { "C+4", -28 }, { "C+5", -27 }, { "C+6", -26 }, { " D", -25 }, { "D+1", -24 }, { "D+2", -23 }, { "D+3", -22 }, { "D+4", -21 }, { "D+5", -20 }, { "D+6", -19 }, { " E", -18 }, { "E+1", -17 }, { "E+2", -16 }, { "E+3", -15 }, { " F", -14 }, { "F+1", -13 }, { "F+2", -12 }, { "F+3", -11 }, { "F+4", -10 }, { "F+5", -9 }, { "F+6", -8 }, { " G", -7 }, { "G+1", -6 }, { "G+2", -5 }, { "G+3", -4 }, { "G+4", -3 }, { "G+5", -2 }, { "G+6", -1 }, { " A", 0 }, { "A+1", 1 }, { "A+2", 2 }, { "A+3", 3 }, { "A+4", 4 }, { "A+5", 5 }, { "A+6", 6 }, { " B", 7 }, { "B+1", 8 }, { "B+2", 9 }, { "B+3", 10 }, { "B+4", 11 } } },
-  { "46 EDO", 46, 1200.0 / 46.0, { { " C", -35 }, { "C+1", -34 }, { "C+2", -33 }, { "C+3", -32 }, { "C+4", -31 }, { "C+5", -30 }, { "C+6", -29 }, { "C+7", -28 }, { " D", -27 }, { "D+1", -26 }, { "D+2", -25 }, { "D+3", -24 }, { "D+4", -23 }, { "D+5", -22 }, { "D+6", -21 }, { "D+7", -20 }, { " E", -19 }, { "E+1", -18 }, { "E+2", -17 }, { " F", -16 }, { "F+1", -15 }, { "F+2", -14 }, { "F+3", -13 }, { "F+4", -12 }, { "F+5", -11 }, { "F+6", -10 }, { "F+7", -9 }, { " G", -8 }, { "G+1", -7 }, { "G+2", -6 }, { "G+3", -5 }, { "G+4", -4 }, { "G+5", -3 }, { "G+6", -2 }, { "G+7", -1 }, { " A", 0 }, { "A+1", 1 }, { "A+2", 2 }, { "A+3", 3 }, { "A+4", 4 }, { "A+5", 5 }, { "A+6", 6 }, { "A+7", 7 }, { " B", 8 }, { "B+1", 9 }, { "B+2", 10 } } },
-  { "53 EDO", 53, 1200.0 / 53.0, { { " C", -40 }, { "^C", -39 }, { ">C", -38 }, { "vDb", -37 }, { "Db", -36 }, { " C#", -35 }, { "^C#", -34 }, { "<D", -33 }, { "vD", -32 }, { " D", -31 }, { "^D", -30 }, { ">D", -29 }, { "vEb", -28 }, { "Eb", -27 }, { " D#", -26 }, { "^D#", -25 }, { "<E", -24 }, { "vE", -23 }, { " E", -22 }, { "^E", -21 }, { ">E", -20 }, { "vF", -19 }, { " F", -18 }, { "^F", -17 }, { ">F", -16 }, { "vGb", -15 }, { "Gb", -14 }, { " F#", -13 }, { "^F#", -12 }, { "<G", -11 }, { "vG", -10 }, { " G", -9 }, { "^G", -8 }, { ">G", -7 }, { "vAb", -6 }, { "Ab", -5 }, { " G#", -4 }, { "^G#", -3 }, { "<A", -2 }, { "vA", -1 }, { " A", 0 }, { "^A", 1 }, { ">A", 2 }, { "vBb", 3 }, { "Bb", 4 }, { " A#", 5 }, { "^A#", 6 }, { "<B", 7 }, { "vB", 8 }, { " B", 9 }, { "^B", 10 }, { "<C", 11 }, { "vC", 12 } } },
-  { "58 EDO", 58, 1200.0 / 58.0, { { " C", -44 }, { "C+1", -43 }, { "C+2", -42 }, { "C+3", -41 }, { "C+4", -40 }, { "C+5", -39 }, { "C+6", -38 }, { "C+7", -37 }, { "C+8", -36 }, { "C+8", -35 }, { " D", -34 }, { "D+1", -33 }, { "D+2", -32 }, { "D+3", -31 }, { "D+4", -30 }, { "D+5", -29 }, { "D+6", -28 }, { "D+7", -27 }, { "D+8", -26 }, { "D+8", -25 }, { " E", -24 }, { "E+1", -23 }, { "E+2", -22 }, { "E+3", -21 }, { " F", -20 }, { "F+1", -19 }, { "F+2", -18 }, { "F+3", -17 }, { "F+4", -16 }, { "F+5", -15 }, { "F+6", -14 }, { "F+7", -13 }, { "F+8", -12 }, { "F+9", -11 }, { " G", -10 }, { "G+1", -9 }, { "G+2", -8 }, { "G+3", -7 }, { "G+4", -6 }, { "G+5", -5 }, { "G+6", -4 }, { "G+7", -3 }, { "G+8", -2 }, { "G+9", -1 }, { " A", 0 }, { "A+1", 1 }, { "A+2", 2 }, { "A+3", 3 }, { "A+4", 4 }, { "A+5", 5 }, { "A+6", 6 }, { "A+7", 7 }, { "A+8", 7 }, { "A+9", 7 }, { " B", 10 }, { "B+1", 11 }, { "B+2", 12 } } },
-  { "58 EDO 289 ZPI", 58, 1200.0 / 58.0667185533159, { { " C", -44 }, { "C+1", -43 }, { "C+2", -42 }, { "C+3", -41 }, { "C+4", -40 }, { "C+5", -39 }, { "C+6", -38 }, { "C+7", -37 }, { "C+8", -36 }, { "C+8", -35 }, { " D", -34 }, { "D+1", -33 }, { "D+2", -32 }, { "D+3", -31 }, { "D+4", -30 }, { "D+5", -29 }, { "D+6", -28 }, { "D+7", -27 }, { "D+8", -26 }, { "D+8", -25 }, { " E", -24 }, { "E+1", -23 }, { "E+2", -22 }, { "E+3", -21 }, { " F", -20 }, { "F+1", -19 }, { "F+2", -18 }, { "F+3", -17 }, { "F+4", -16 }, { "F+5", -15 }, { "F+6", -14 }, { "F+7", -13 }, { "F+8", -12 }, { "F+9", -11 }, { " G", -10 }, { "G+1", -9 }, { "G+2", -8 }, { "G+3", -7 }, { "G+4", -6 }, { "G+5", -5 }, { "G+6", -4 }, { "G+7", -3 }, { "G+8", -2 }, { "G+9", -1 }, { " A", 0 }, { "A+1", 1 }, { "A+2", 2 }, { "A+3", 3 }, { "A+4", 4 }, { "A+5", 5 }, { "A+6", 6 }, { "A+7", 7 }, { "A+8", 7 }, { "A+9", 7 }, { " B", 10 }, { "B+1", 11 }, { "B+2", 12 } } },
-  { "72 EDO", 72, 1200.0 / 72.0, { { " C", -54 }, { "^C", -53 }, { ">C", -52 }, { " C+", -51 }, { "<C#", -50 }, { "vC#", -49 }, { " C#", -48 }, { "^C#", -47 }, { ">C#", -46 }, { " Dd", -45 }, { "<D", -44 }, { "vD", -43 }, { " D", -42 }, { "^D", -41 }, { ">D", -40 }, { " D+", -39 }, { "<Eb", -38 }, { "vEb", -37 }, { " Eb", -36 }, { "^Eb", -35 }, { ">Eb", -34 }, { " Ed", -33 }, { "<E", -32 }, { "vE", -31 }, { " E", -30 }, { "^E", -29 }, { ">E", -28 }, { " E+", -27 }, { "<F", -26 }, { "vF", -25 }, { " F", -24 }, { "^F", -23 }, { ">F", -22 }, { " F+", -21 }, { "<F#", -20 }, { "vF#", -19 }, { " F#", -18 }, { "^F#", -17 }, { ">F#", -16 }, { " Gd", -15 }, { "<G", -14 }, { "vG", -13 }, { " G", -12 }, { "^G", -11 }, { ">G", -10 }, { " G+", -9 }, { "<G#", -8 }, { "vG#", -7 }, { " G#", -6 }, { "^G#", -5 }, { ">G#", -4 }, { " Ad", -3 }, { "<A", -2 }, { "vA", -1 }, { " A", 0 }, { "^A", 1 }, { ">A", 2 }, { " A+", 3 }, { "<Bb", 4 }, { "vBb", 5 }, { " Bb", 6 }, { "^Bb", 7 }, { ">Bb", 8 }, { " Bd", 9 }, { "<B", 10 }, { "vB", 11 }, { " B", 12 }, { "^B", 13 }, { ">B", 14 }, { " Cd", 15 }, { "<C", 16 }, { "vC", 17 } } },
-  { "72 EDO 380 ZPI", 72, 1200.0 / 71.9506065993786, { { " C", -54 }, { "^C", -53 }, { ">C", -52 }, { " C+", -51 }, { "<C#", -50 }, { "vC#", -49 }, { " C#", -48 }, { "^C#", -47 }, { ">C#", -46 }, { " Dd", -45 }, { "<D", -44 }, { "vD", -43 }, { " D", -42 }, { "^D", -41 }, { ">D", -40 }, { " D+", -39 }, { "<Eb", -38 }, { "vEb", -37 }, { " Eb", -36 }, { "^Eb", -35 }, { ">Eb", -34 }, { " Ed", -33 }, { "<E", -32 }, { "vE", -31 }, { " E", -30 }, { "^E", -29 }, { ">E", -28 }, { " E+", -27 }, { "<F", -26 }, { "vF", -25 }, { " F", -24 }, { "^F", -23 }, { ">F", -22 }, { " F+", -21 }, { "<F#", -20 }, { "vF#", -19 }, { " F#", -18 }, { "^F#", -17 }, { ">F#", -16 }, { " Gd", -15 }, { "<G", -14 }, { "vG", -13 }, { " G", -12 }, { "^G", -11 }, { ">G", -10 }, { " G+", -9 }, { "<G#", -8 }, { "vG#", -7 }, { " G#", -6 }, { "^G#", -5 }, { ">G#", -4 }, { " Ad", -3 }, { "<A", -2 }, { "vA", -1 }, { " A", 0 }, { "^A", 1 }, { ">A", 2 }, { " A+", 3 }, { "<Bb", 4 }, { "vBb", 5 }, { " Bb", 6 }, { "^Bb", 7 }, { ">Bb", 8 }, { " Bd", 9 }, { "<B", 10 }, { "vB", 11 }, { " B", 12 }, { "^B", 13 }, { ">B", 14 }, { " Cd", 15 }, { "<C", 16 }, { "vC", 17 } } },
-  { "80 EDO", 80, 1200.0 / 80.0, { { " C", -61 }, { "C+1", -60 }, { "C+2", -59 }, { "C+3", -58 }, { "C+4", -57 }, { "C+5", -56 }, { "C+6", -55 }, { "C+7", -54 }, { "C+8", -53 }, { "C+9", -52 }, { "C+10", -51 }, { "C+11", -50 }, { "C+12", -49 }, { "C+13", -48 }, { " D", -47 }, { "D+1", -46 }, { "D+2", -45 }, { "D+3", -44 }, { "D+4", -43 }, { "D+5", -42 }, { "D+6", -41 }, { "D+7", -40 }, { "D+8", -39 }, { "D+9", -38 }, { "D+11", -37 }, { "D+12", -36 }, { "D+13", -35 }, { "D+14", -34 }, { " E", -33 }, { "E+1", -32 }, { "E+2", -31 }, { "E+3", -30 }, { "E+4", -29 }, { " F", -28 }, { "F+1", -27 }, { "F+2", -26 }, { "F+3", -25 }, { "F+4", -24 }, { "F+5", -23 }, { "F+6", -22 }, { "F+7", -21 }, { "F+8", -20 }, { "F+9", -19 }, { "F+11", -18 }, { "F+12", -17 }, { "F+13", -16 }, { "F+14", -15 }, { " G", -14 }, { "G+1", -13 }, { "G+2", -12 }, { "G+3", -11 }, { "G+4", -10 }, { "G+5", -9 }, { "G+6", -8 }, { "G+7", -7 }, { "G+8", -6 }, { "G+9", -5 }, { "G+11", -4 }, { "G+12", -3 }, { "G+13", -2 }, { "G+14", -1 }, { " A", 0 }, { "A+1", 1 }, { "A+2", 2 }, { "A+3", 3 }, { "A+4", 4 }, { "A+5", 5 }, { "A+6", 6 }, { "A+7", 7 }, { "A+8", 8 }, { "A+9", 9 }, { "A+10", 10 }, { "A+11", 11 }, { "A+12", 12 }, { "A+13", 13 }, { " B", 14 }, { "B+1", 15 }, { "B+2", 16 }, { "B+3", 17 }, { "B+4", 18 } } },
-  { "87 EDO", 87, 1200.0 / 87.0, { { " C", -66 }, { "C+1", -65 }, { "C+2", -64 }, { "C+3", -63 }, { "C+4", -62 }, { "C+5", -61 }, { "C+6", -60 }, { "C+7", -59 }, { "C+8", -58 }, { "C+9", -57 }, { "C10", -57 }, { "C+11", -56 }, { "C+12", -55 }, { "C+13", -54 }, { "C+14", -53 }, { "C+15", -52 }, { " D", -51 }, { "D+1", -50 }, { "D+2", -49 }, { "D+3", -48 }, { "D+4", -47 }, { "D+5", -46 }, { "D+6", -45 }, { "D+7", -44 }, { "D+8", -43 }, { "D+9", -42 }, { "D+10", -41 }, { "D+11", -40 }, { "D+12", -39 }, { "D+13", -38 }, { "D+14", -37 }, { " E", -36 }, { "E+1", -35 }, { "E+2", -34 }, { "E+3", -33 }, { " F", -30 }, { "F+1", -29 }, { "F+2", -28 }, { "F+3", -27 }, { "F+4", -26 }, { "F+5", -25 }, { "F+6", -24 }, { "F+7", -23 }, { "F+8", -22 }, { "F+9", -21 }, { "F+10", -20 }, { "F+11", -19 }, { "F+12", -18 }, { "F+13", -17 }, { "F+14", -16 }, { " G", -15 }, { "G+1", -14 }, { "G+2", -13 }, { "G+3", -12 }, { "G+4", -11 }, { "G+5", -10 }, { "G+6", -9 }, { "G+7", -8 }, { "G+8", -7 }, { "G+9", -6 }, { "G+10", -5 }, { "G+11", -4 }, { "G+12", -3 }, { "G+13", -2 }, { "G+14", -1 }, { " A", 0 }, { "A+1", 1 }, { "A+2", 2 }, { "A+3", 3 }, { "A+4", 4 }, { "A+5", 5 }, { "A+6", 6 }, { "A+7", 7 }, { "A+8", 8 }, { "A+9", 9 }, { "A+10", 10 }, { "A+11", 11 }, { "A+12", 12 }, { "A+13", 13 }, { "A+14", 14 }, { " B", 15 }, { "B+1", 16 }, { "B+2", 17 }, { "B+3", 18 } } },
-  { "Bohlen-Pierce", 13, (1200.0 * (log(3.0 / 1.0) / log(2.0))) / 13.0, { { "C", -10 }, { "Db", -9 }, { "D", -8 }, { "E", -7 }, { "F", -6 }, { "Gb", -5 }, { "G", -4 }, { "H", -3 }, { "Jb", -2 }, { "J", -1 }, { "A", 0 }, { "Bb", 1 }, { "B", 2 } } },
-  { "Carlos Alpha", 9, 77.964990, { { "I", 0 }, { "I#", 1 }, { "II-", 2 }, { "II+", 3 }, { "III", 4 }, { "III#", 5 }, { "IV-", 6 }, { "IV+", 7 }, { "Ib", 8 } } },
-  { "Carlos Beta", 11, 63.832933, { { "I", 0 }, { "I#", 1 }, { "IIb", 2 }, { "II", 3 }, { "II#", 4 }, { "III", 5 }, { "III#", 6 }, { "IVb", 7 }, { "IV", 8 }, { "IV#", 9 }, { "Ib", 10 } } },
-  { "Carlos Gamma", 20, 35.0985422804, { { " I", 0 }, { "^I", 1 }, { " IIb", 2 }, { "^IIb", 3 }, { " I#", 4 }, { "^I#", 5 }, { " II", 6 }, { "^II", 7 }, { " III", 8 }, { "^III", 9 }, { " IVb", 10 }, { "^IVb", 11 }, { " III#", 12 }, { "^III#", 13 }, { " IV", 14 }, { "^IV", 15 }, { " Ib", 16 }, { "^Ib", 17 }, { " IV#", 18 }, { "^IV#", 19 } } },
   // Custom EDO slots (populated at runtime by generateCustomTuning)
   { "Custom 1", 12, 100.0, { { "0", 0 }, { "1", 1 }, { "2", 2 }, { "3", 3 }, { "4", 4 }, { "5", 5 }, { "6", 6 }, { "7", 7 }, { "8", 8 }, { "9", 9 }, { "10", 10 }, { "11", 11 } } },
   { "Custom 2", 12, 100.0, { { "0", 0 }, { "1", 1 }, { "2", 2 }, { "3", 3 }, { "4", 4 }, { "5", 5 }, { "6", 6 }, { "7", 7 }, { "8", 8 }, { "9", 9 }, { "10", 10 }, { "11", 11 } } },
   { "Custom 3", 12, 100.0, { { "0", 0 }, { "1", 1 }, { "2", 2 }, { "3", 3 }, { "4", 4 }, { "5", 5 }, { "6", 6 }, { "7", 7 }, { "8", 8 }, { "9", 9 }, { "10", 10 }, { "11", 11 } } },
   { "Custom 4", 12, 100.0, { { "0", 0 }, { "1", 1 }, { "2", 2 }, { "3", 3 }, { "4", 4 }, { "5", 5 }, { "6", 6 }, { "7", 7 }, { "8", 8 }, { "9", 9 }, { "10", 10 }, { "11", 11 } } },
+  { "Custom 5", 12, 100.0, { { "0", 0 }, { "1", 1 }, { "2", 2 }, { "3", 3 }, { "4", 4 }, { "5", 5 }, { "6", 6 }, { "7", 7 }, { "8", 8 }, { "9", 9 }, { "10", 10 }, { "11", 11 } } },
+  { "Custom 6", 12, 100.0, { { "0", 0 }, { "1", 1 }, { "2", 2 }, { "3", 3 }, { "4", 4 }, { "5", 5 }, { "6", 6 }, { "7", 7 }, { "8", 8 }, { "9", 9 }, { "10", 10 }, { "11", 11 } } },
+  { "Custom 7", 12, 100.0, { { "0", 0 }, { "1", 1 }, { "2", 2 }, { "3", 3 }, { "4", 4 }, { "5", 5 }, { "6", 6 }, { "7", 7 }, { "8", 8 }, { "9", 9 }, { "10", 10 }, { "11", 11 } } },
+  { "Custom 8", 12, 100.0, { { "0", 0 }, { "1", 1 }, { "2", 2 }, { "3", 3 }, { "4", 4 }, { "5", 5 }, { "6", 6 }, { "7", 7 }, { "8", 8 }, { "9", 9 }, { "10", 10 }, { "11", 11 } } },
+  { "Custom 9", 12, 100.0, { { "0", 0 }, { "1", 1 }, { "2", 2 }, { "3", 3 }, { "4", 4 }, { "5", 5 }, { "6", 6 }, { "7", 7 }, { "8", 8 }, { "9", 9 }, { "10", 10 }, { "11", 11 } } },
+  { "Custom 10", 12, 100.0, { { "0", 0 }, { "1", 1 }, { "2", 2 }, { "3", 3 }, { "4", 4 }, { "5", 5 }, { "6", 6 }, { "7", 7 }, { "8", 8 }, { "9", 9 }, { "10", 10 }, { "11", 11 } } },
+  { "Custom 11", 12, 100.0, { { "0", 0 }, { "1", 1 }, { "2", 2 }, { "3", 3 }, { "4", 4 }, { "5", 5 }, { "6", 6 }, { "7", 7 }, { "8", 8 }, { "9", 9 }, { "10", 10 }, { "11", 11 } } },
+  { "Custom 12", 12, 100.0, { { "0", 0 }, { "1", 1 }, { "2", 2 }, { "3", 3 }, { "4", 4 }, { "5", 5 }, { "6", 6 }, { "7", 7 }, { "8", 8 }, { "9", 9 }, { "10", 10 }, { "11", 11 } } },
 };
 
 // @customEDO
@@ -483,7 +456,7 @@ tuningDef tuningOptions[] = {
 */
 
 // Static string buffer pool for custom key names.
-// 4 slots * 87 keys * 4 chars each ("0"-"86" + null) = 1392 bytes.
+// 12 slots * 87 keys * 4 chars each ("0"-"86" + null) = 4176 bytes.
 char customKeyNameBuf[CUSTOM_TUNING_COUNT][MAX_SCALE_DIVISIONS][4];
 
 // Static string buffers for custom tuning display names.
@@ -491,7 +464,7 @@ char customKeyNameBuf[CUSTOM_TUNING_COUNT][MAX_SCALE_DIVISIONS][4];
 char customTuningNameBuf[CUSTOM_TUNING_COUNT][18];
 
 // Stored EDO values for each custom slot (0 = unconfigured)
-byte customEdoValues[CUSTOM_TUNING_COUNT] = { 0, 0, 0, 0 };
+byte customEdoValues[CUSTOM_TUNING_COUNT] = { 0 };
 
 /*
     Compute the patent-val best approximation of a just ratio in N-EDO.
@@ -503,7 +476,7 @@ int bestStepsForRatio(byte N, float ratio) {
 
 /*
     Generate the tuning definition for a custom EDO slot.
-    slotIndex: 0-3 (which custom slot)
+    slotIndex: 0-11 (which custom slot)
     edoDivisions: 2-87 (the N in N-EDO)
 */
 void generateCustomTuning(byte slotIndex, byte edoDivisions) {
@@ -548,7 +521,7 @@ byte customLayoutBaseIndex(byte slotIndex);  // forward declaration
 
 /*
     Generate 5 isomorphic layouts for a custom EDO slot.
-    slotIndex: 0-3 (which custom slot)
+    slotIndex: 0-11 (which custom slot)
     edoDivisions: 2-87 (the N in N-EDO)
 
     Layout formulas derived from the patent-val fifth F = round(N * log2(3/2)):
@@ -617,185 +590,6 @@ layoutDef layoutOptions[] = {
   { "Accordion B-sys.", 1, 64, 1, -3, TUNING_12EDO },
   { "Chromatic", 0, 75, 12, -1, TUNING_12EDO },
   { "Full Gamut", 1, 75, 1, -9, TUNING_12EDO },
-
-  { "Wicki-Hayden", 1, 64, 2, -7, TUNING_12EDO_ZETA },
-  { "Harmonic Table", 0, 75, -7, 3, TUNING_12EDO_ZETA },
-  { "Janko", 0, 65, 1, -2, TUNING_12EDO_ZETA },
-  { "Bosanquet-Wilson", 0, 65, -1, -1, TUNING_12EDO_ZETA },
-  { "Compressed Janko", 0, 65, -1, -2, TUNING_12EDO_ZETA },
-  { "Compr. Bosanquet", 0, 65, 1, -3, TUNING_12EDO_ZETA },
-  { "Gerhard", 0, 65, -1, -3, TUNING_12EDO_ZETA },
-  { "Accordion C-sys.", 1, 75, 2, -3, TUNING_12EDO_ZETA },
-  { "Accordion B-sys.", 1, 64, 1, -3, TUNING_12EDO_ZETA },
-  { "Chromatic", 0, 75, 12, -1, TUNING_12EDO_ZETA },
-  { "Full Gamut", 1, 75, 1, -9, TUNING_12EDO_ZETA },
-
-  { "Compressed Janko", 0, 65, -1, -3, TUNING_17EDO },
-  { "Compr. Bosanquet", 0, 65, 1, -4, TUNING_17EDO },
-  { "Janko", 0, 65, 2, -3, TUNING_17EDO },
-  { "Bosanquet-Wilson", 0, 65, -2, -1, TUNING_17EDO },
-  { "Neutral Thirds A", 0, 65, -1, -2, TUNING_17EDO },
-  { "Neutral Thirds B", 0, 65, 1, -3, TUNING_17EDO },
-  { "Full Gamut", 1, 75, 1, -9, TUNING_17EDO },
-
-  { "Wicki-Hayden", 1, 65, 3, -11, TUNING_19EDO },
-  { "Compressed Janko", 0, 65, -2, -3, TUNING_19EDO },
-  { "Compr. Bosanquet", 0, 65, 2, -5, TUNING_19EDO },
-  { "Janko", 0, 65, 1, -3, TUNING_19EDO },
-  { "Bosanquet-Wilson", 0, 65, -1, -2, TUNING_19EDO },
-  { "Harmonic Table", 0, 75, -11, 5, TUNING_19EDO },
-  { "Kleismic", 0, 65, -1, -4, TUNING_19EDO },
-  { "Full Gamut", 1, 75, 1, -9, TUNING_19EDO },
-
-  { "Compressed Janko", 0, 65, -1, -4, TUNING_22EDO },
-  { "Compr. Bosanquet", 0, 65, 1, -5, TUNING_22EDO },
-  { "Janko", 0, 65, 3, -4, TUNING_22EDO },
-  { "Bosanquet-Wilson", 0, 65, -3, -1, TUNING_22EDO },
-  { "Wicki-Hayden", 1, 64, 4, -13, TUNING_22EDO },
-  { "Porcupine", 0, 65, 1, -4, TUNING_22EDO },
-  { "Full Gamut", 1, 75, 1, -9, TUNING_22EDO },
-
-  { "Janko", 0, 65, 1, -4, TUNING_24EDO },              // Maybe call it "Quartertone Janko"?
-  { "Bosanquet-Wilson", 0, 65, -1, -3, TUNING_24EDO },  // Maybe call it "1/4 tone Bosanquet"?
-  { "Full Gamut", 1, 75, 1, -9, TUNING_24EDO },
-
-  { "Compressed Janko", 0, 65, -3, -5, TUNING_31EDO },
-  { "Compr. Bosanquet", 0, 65, 3, -8, TUNING_31EDO },
-  { "Janko", 0, 65, 2, -5, TUNING_31EDO },
-  { "Bosanquet-Wilson", 0, 65, -2, -3, TUNING_31EDO },
-  { "Wicki-Hayden", 1, 64, 5, -18, TUNING_31EDO },
-  { "5X -13Y", 1, 64, 5, -13, TUNING_31EDO },  // Unnamed layout, between Wicki-Hayd. and compressed Janko
-  { "Harmonic Table", 0, 75, -18, 8, TUNING_31EDO },
-  { "Double Bosanquet", 0, 65, -1, -4, TUNING_31EDO },
-  { "Anti-Double Bos.", 0, 65, 1, -5, TUNING_31EDO },
-  { "Full Gamut", 1, 75, 1, -9, TUNING_31EDO },
-
-  { "Compressed Janko", 0, 65, -3, -5, TUNING_31EDO_ZETA },
-  { "Compr. Bosanquet", 0, 65, 3, -8, TUNING_31EDO_ZETA },
-  { "Janko", 0, 65, 2, -5, TUNING_31EDO_ZETA },
-  { "Bosanquet-Wilson", 0, 65, -2, -3, TUNING_31EDO_ZETA },
-  { "Wicki-Hayden", 1, 64, 5, -18, TUNING_31EDO_ZETA },
-  { "5X -13Y", 1, 64, 5, -13, TUNING_31EDO_ZETA },  // Unnamed layout, between Wicki-Hayd. and compressed Janko
-  { "Harmonic Table", 0, 75, -18, 8, TUNING_31EDO_ZETA },
-  { "Double Bosanquet", 0, 65, -1, -4, TUNING_31EDO_ZETA },
-  { "Anti-Double Bos.", 0, 65, 1, -5, TUNING_31EDO_ZETA },
-  { "Full Gamut", 1, 75, 1, -9, TUNING_31EDO_ZETA },
-
-  { "Compressed Janko", 0, 65, -3, -7, TUNING_41EDO },
-  { "Compr. Bosanquet", 0, 65, 3, -10, TUNING_41EDO },
-  { "Janko", 0, 65, 4, -7, TUNING_41EDO },
-  { "Bosanquet-Wilson", 0, 65, -4, -3, TUNING_41EDO },  // forty-one #1
-  { "Harmonic Table", 0, 75, -24, 11, TUNING_41EDO },
-  { "Wicki-Hayden", 1, 64, 7, -24, TUNING_41EDO },
-  { "Gerhard", 0, 65, 3, -10, TUNING_41EDO },  // forty-one #2
-  { "Baldy", 0, 65, -1, -6, TUNING_41EDO },
-  { "Rodan", 1, 65, -1, -7, TUNING_41EDO },
-  { "Full Gamut", 1, 75, 1, -9, TUNING_41EDO },  // forty-one #3
-
-  { "Janko", 0, 65, 3, -7, TUNING_43EDO },
-  { "Bosanquet-Wilson", 0, 65, -3, -4, TUNING_43EDO },
-  { "Wicki-Hayden", 1, 64, 7, -25, TUNING_43EDO },
-  { "Harmonic Table", 0, 75, -25, 11, TUNING_43EDO },
-  { "Full Gamut", 0, 75, 1, -9, TUNING_43EDO },
-
-  { "Janko", 0, 65, 5, -8, TUNING_46EDO },
-  { "Bosanquet-Wilson", 0, 65, -5, -3, TUNING_46EDO },
-  { "Harmonic Table", 0, 75, -27, 12, TUNING_46EDO },
-  { "Echidnic", 0, 65, 5, -9, TUNING_46EDO },
-  { "Full Gamut", 1, 75, 1, -9, TUNING_46EDO },
-
-  { "Janko", 0, 65, 5, -9, TUNING_53EDO },
-  { "Bosanquet-Wilson", 0, 65, -5, -4, TUNING_53EDO },
-  { "Harmonic Table", 0, 75, -31, 14, TUNING_53EDO },
-  { "Wicki-Hayden", 1, 64, 9, -31, TUNING_53EDO },
-  { "Kleismic A", 0, 65, -8, -3, TUNING_53EDO },
-  { "Kleismic B", 0, 65, -5, -3, TUNING_53EDO },
-  { "Buzzard", 0, 65, -9, -1, TUNING_53EDO },
-  { "Compressed Janko", 1, 65, -4, -9, TUNING_53EDO },
-  { "Compr. Bosanquet", 1, 65, 4, -13, TUNING_53EDO },
-  { "Full Gamut", 1, 75, 1, -9, TUNING_53EDO },
-
-  { "Janko", 0, 64, 3, -10, TUNING_58EDO },           // Maybe call it "Quartertone Janko"?
-  { "Bosanquet-Wilson", 0, 64, 3, 7, TUNING_58EDO },  // Maybe call it "Quartertone Bosanquet"?
-  { "Hemififths", 0, 64, 4, -7, TUNING_58EDO },
-  { "Hemififths Mirror.", 0, 64, -4, -3, TUNING_58EDO },
-  { "Chromatic", 0, 64, -7, -5, TUNING_58EDO },
-  { "Harmonic Table", 0, 75, -34, 15, TUNING_58EDO },
-  { "Septimal H.T.", 0, 75, -34, 13, TUNING_58EDO },
-  { "Diaschismic", 0, 64, 4, -9, TUNING_58EDO },
-  { "4X -19Y", 0, 64, 4, -19, TUNING_58EDO },    // unnamed layout, efficient for major 7ths, 9s, #11s and so on
-  { "-27X 10Y", 1, 64, -27, 10, TUNING_58EDO },  // weird but efficient layout
-  { "Wicki-Hayd.(29EDO)", 1, 64, 10, -34, TUNING_58EDO },
-  { "Bos.Wilson (29EDO)", 0, 65, -6, -4, TUNING_58EDO },
-  { "Janko      (29EDO)", 0, 65, 6, -10, TUNING_58EDO },  // 29 EDO subset, each for two rings of fifths
-  { "Tridec.H.T.(29EDO)", 0, 75, -34, 14, TUNING_58EDO },
-  { "Full Gamut", 1, 75, 1, -9, TUNING_58EDO },
-
-  { "Janko", 0, 64, 3, -10, TUNING_58EDO_ZETA },           // Maybe call it "Quartertone Janko"?
-  { "Bosanquet-Wilson", 0, 64, 3, 7, TUNING_58EDO_ZETA },  // Maybe call it "1/4 tone Bosanquet"?
-  { "Hemififths", 0, 64, 4, -7, TUNING_58EDO_ZETA },
-  { "Hemififths Mirror.", 0, 64, -4, -3, TUNING_58EDO_ZETA },
-  { "Chromatic", 0, 64, -7, -5, TUNING_58EDO_ZETA },
-  { "Harmonic Table", 0, 75, -34, 15, TUNING_58EDO_ZETA },
-  { "Septimal H.T.", 0, 75, -34, 13, TUNING_58EDO_ZETA },
-  { "Diaschismic", 0, 64, 4, -9, TUNING_58EDO_ZETA },
-  { "4X -19Y", 0, 64, 4, -19, TUNING_58EDO_ZETA },    // unnamed layout, efficient for major 7ths, 9s, #11s and so on
-  { "-27X 10Y", 1, 64, -27, 10, TUNING_58EDO_ZETA },  // weird but efficient layout
-  { "Wicki-Hayd.(29EDO)", 1, 64, 10, -34, TUNING_58EDO_ZETA },
-  { "Bos.Wilson (29EDO)", 0, 65, -6, -4, TUNING_58EDO_ZETA },
-  { "Janko      (29EDO)", 0, 65, 6, -10, TUNING_58EDO_ZETA },  // 29 EDO subset, each for two rings of fifths
-  { "Tridec.H.T.(29EDO)", 0, 75, -34, 14, TUNING_58EDO_ZETA },
-  { "Full Gamut", 1, 75, 1, -9, TUNING_58EDO_ZETA },
-
-  { "Harmonic Table", 0, 75, -42, 19, TUNING_72EDO },
-  { "-30X 19Y", 0, 75, -30, 19, TUNING_72EDO },  // unnamed layout. Like harmonic table but with fourths instead of fifths
-  { "Miracle Mapping", 0, 65, -7, -2, TUNING_72EDO },
-  { "Sept.H.T.(36EDO)", 0, 75, -42, 16, TUNING_72EDO },  // 36 EDO subset
-  { "Expanded Janko", 0, 65, -1, -6, TUNING_72EDO },
-  { "Full Gamut", 1, 65, 1, -9, TUNING_72EDO },
-
-  { "Harmonic Table", 0, 75, -42, 19, TUNING_72EDO_ZETA },
-  { "-30X 19Y", 0, 75, -30, 19, TUNING_72EDO_ZETA },  // unnamed layout. Like harmonic table but with fourths instead of fifths
-  { "Miracle Mapping", 0, 65, -7, -2, TUNING_72EDO_ZETA },
-  { "Sept.H.T.(36EDO)", 0, 75, -42, 16, TUNING_72EDO_ZETA },  // 36 EDO subset
-  { "Expanded Janko", 0, 65, -1, -6, TUNING_72EDO_ZETA },
-  { "Full Gamut", 1, 65, 1, -9, TUNING_72EDO_ZETA },
-
-  { "Janko", 0, 65, 9, -14, TUNING_80EDO },             // Janko mapping is still too large to map all notes (same for 87 EDO)
-  { "Bosanquet-Wilson", 0, 65, -9, -5, TUNING_80EDO },  // Same for Bosanquet-Wilson. Still usable
-  { "Compressed Janko", 0, 65, -5, -14, TUNING_80EDO },
-  { "Full Gamut", 1, 75, 1, -9, TUNING_80EDO },  // So far this is the only one layout that maps every note
-
-  { "Harmonic Table", 0, 75, -51, 23, TUNING_87EDO },
-  { "Janko (good 3/2)", 0, 65, 5, -14, TUNING_87EDO },
-  { "Bos.W.(good 3/2)", 0, 65, -5, -9, TUNING_87EDO },
-  { "Wic.Hayd.nooctave", 1, 64, 14, -51, TUNING_87EDO },  // perfect thirds at the cost of losing an octave
-  { "Wic.Hayd. Pyth.", 1, 64, 15, -51, TUNING_87EDO },    // pythagorean thirds, octave is preserved, note variety decreased
-  { "Janko (Good 4/3)", 0, 65, 6, -14, TUNING_87EDO },    // Less efficient but allows perfect chord inversions
-  { "Bos.W.(Good 4/3)", 0, 65, -6, -8, TUNING_87EDO },
-  { "Bos.W.(26EDO)", 0, 65, -9, -6, TUNING_87EDO },
-  { "Janko (26EDO)", 0, 65, 9, -15, TUNING_87EDO },
-  { "Full Gamut", 1, 75, 1, -9, TUNING_87EDO },
-
-  { "Standard", 0, 65, -2, -1, TUNING_BP },
-  { "Full Gamut", 1, 65, 1, -9, TUNING_BP },
-
-  { "Harmonic Table", 0, 75, -9, 5, TUNING_ALPHA },
-  { "Compressed", 0, 65, -2, -1, TUNING_ALPHA },
-  { "Full Gamut", 1, 65, 1, -9, TUNING_ALPHA },
-
-  { "Wicki-Hayden", 1, 65, 3, -11, TUNING_BETA },  // Carlos Beta has the same mappings as 19 EDO
-  { "Compressed Janko", 0, 65, -2, -3, TUNING_BETA },
-  { "Compr. Bosanquet", 0, 65, 2, -5, TUNING_BETA },
-  { "Janko", 0, 65, 1, -3, TUNING_BETA },
-  { "Bosanquet-Wilson", 0, 65, -1, -2, TUNING_BETA },
-  { "Harmonic Table", 0, 75, -11, 5, TUNING_BETA },
-  { "Kleismic", 0, 65, -1, -4, TUNING_BETA },
-  { "Full Gamut", 1, 75, 1, -9, TUNING_BETA },
-
-  { "Harmonic Table", 0, 75, -20, 9, TUNING_GAMMA },  // Same mappings as for 34 EDO
-  { "Compressed", 0, 65, -2, -1, TUNING_GAMMA },      // Difficult to map, has two rings of fifths
-  { "Full Gamut", 1, 65, 1, -9, TUNING_GAMMA },
   // Custom EDO layout slots (5 per custom tuning, populated at runtime by generateCustomLayouts)
   // Custom 1
   { "Bosanquet-Wilson", 0, 65, -1, -1, TUNING_CUSTOM_1 },
@@ -820,7 +614,55 @@ layoutDef layoutOptions[] = {
   { "Harmonic Table",   0, 75, -7,  3, TUNING_CUSTOM_4 },
   { "Wicki-Hayden",     1, 64,  2, -7, TUNING_CUSTOM_4 },
   { "Janko",            0, 65,  1, -2, TUNING_CUSTOM_4 },
-  { "Full Gamut",       1, 75,  1, -9, TUNING_CUSTOM_4 }
+  { "Full Gamut",       1, 75,  1, -9, TUNING_CUSTOM_4 },
+  // Custom 5
+  { "Bosanquet-Wilson", 0, 65, -1, -1, TUNING_CUSTOM_5 },
+  { "Harmonic Table",   0, 75, -7,  3, TUNING_CUSTOM_5 },
+  { "Wicki-Hayden",     1, 64,  2, -7, TUNING_CUSTOM_5 },
+  { "Janko",            0, 65,  1, -2, TUNING_CUSTOM_5 },
+  { "Full Gamut",       1, 75,  1, -9, TUNING_CUSTOM_5 },
+  // Custom 6
+  { "Bosanquet-Wilson", 0, 65, -1, -1, TUNING_CUSTOM_6 },
+  { "Harmonic Table",   0, 75, -7,  3, TUNING_CUSTOM_6 },
+  { "Wicki-Hayden",     1, 64,  2, -7, TUNING_CUSTOM_6 },
+  { "Janko",            0, 65,  1, -2, TUNING_CUSTOM_6 },
+  { "Full Gamut",       1, 75,  1, -9, TUNING_CUSTOM_6 },
+  // Custom 7
+  { "Bosanquet-Wilson", 0, 65, -1, -1, TUNING_CUSTOM_7 },
+  { "Harmonic Table",   0, 75, -7,  3, TUNING_CUSTOM_7 },
+  { "Wicki-Hayden",     1, 64,  2, -7, TUNING_CUSTOM_7 },
+  { "Janko",            0, 65,  1, -2, TUNING_CUSTOM_7 },
+  { "Full Gamut",       1, 75,  1, -9, TUNING_CUSTOM_7 },
+  // Custom 8
+  { "Bosanquet-Wilson", 0, 65, -1, -1, TUNING_CUSTOM_8 },
+  { "Harmonic Table",   0, 75, -7,  3, TUNING_CUSTOM_8 },
+  { "Wicki-Hayden",     1, 64,  2, -7, TUNING_CUSTOM_8 },
+  { "Janko",            0, 65,  1, -2, TUNING_CUSTOM_8 },
+  { "Full Gamut",       1, 75,  1, -9, TUNING_CUSTOM_8 },
+  // Custom 9
+  { "Bosanquet-Wilson", 0, 65, -1, -1, TUNING_CUSTOM_9 },
+  { "Harmonic Table",   0, 75, -7,  3, TUNING_CUSTOM_9 },
+  { "Wicki-Hayden",     1, 64,  2, -7, TUNING_CUSTOM_9 },
+  { "Janko",            0, 65,  1, -2, TUNING_CUSTOM_9 },
+  { "Full Gamut",       1, 75,  1, -9, TUNING_CUSTOM_9 },
+  // Custom 10
+  { "Bosanquet-Wilson", 0, 65, -1, -1, TUNING_CUSTOM_10 },
+  { "Harmonic Table",   0, 75, -7,  3, TUNING_CUSTOM_10 },
+  { "Wicki-Hayden",     1, 64,  2, -7, TUNING_CUSTOM_10 },
+  { "Janko",            0, 65,  1, -2, TUNING_CUSTOM_10 },
+  { "Full Gamut",       1, 75,  1, -9, TUNING_CUSTOM_10 },
+  // Custom 11
+  { "Bosanquet-Wilson", 0, 65, -1, -1, TUNING_CUSTOM_11 },
+  { "Harmonic Table",   0, 75, -7,  3, TUNING_CUSTOM_11 },
+  { "Wicki-Hayden",     1, 64,  2, -7, TUNING_CUSTOM_11 },
+  { "Janko",            0, 65,  1, -2, TUNING_CUSTOM_11 },
+  { "Full Gamut",       1, 75,  1, -9, TUNING_CUSTOM_11 },
+  // Custom 12
+  { "Bosanquet-Wilson", 0, 65, -1, -1, TUNING_CUSTOM_12 },
+  { "Harmonic Table",   0, 75, -7,  3, TUNING_CUSTOM_12 },
+  { "Wicki-Hayden",     1, 64,  2, -7, TUNING_CUSTOM_12 },
+  { "Janko",            0, 65,  1, -2, TUNING_CUSTOM_12 },
+  { "Full Gamut",       1, 75,  1, -9, TUNING_CUSTOM_12 }
 };
 const byte layoutCount = sizeof(layoutOptions) / sizeof(layoutDef);
 // Index of first custom layout slot = layoutCount - (CUSTOM_TUNING_COUNT * CUSTOM_LAYOUTS_PER_TUNING)
@@ -917,102 +759,19 @@ scaleDef scaleOptions[] = {
   { "Locrian", TUNING_12EDO, { 1, 2, 2, 1, 2, 2, 2 } },
   { "Whole Tone", TUNING_12EDO, { 2, 2, 2, 2, 2, 2 } },
   { "Octatonic", TUNING_12EDO, { 2, 1, 2, 1, 2, 1, 2, 1 } },
-  // 17 EDO; for more: https://en.xen.wiki/w/17edo#Scales
-  { "Diatonic", TUNING_17EDO, { 3, 3, 1, 3, 3, 3, 1 } },
-  { "Pentatonic", TUNING_17EDO, { 3, 3, 4, 3, 4 } },
-  { "Harmonic", TUNING_17EDO, { 3, 2, 3, 2, 2, 2, 3 } },
-  { "Husayni Maqam", TUNING_17EDO, { 2, 2, 3, 3, 2, 1, 1, 3 } },
-  { "Blues", TUNING_17EDO, { 4, 3, 1, 1, 1, 4, 3 } },
-  { "Hydra", TUNING_17EDO, { 3, 3, 1, 1, 2, 3, 2, 1, 1 } },
-  // 19 EDO; for more: https://en.xen.wiki/w/19edo#Scales
-  { "Diatonic", TUNING_19EDO, { 3, 3, 2, 3, 3, 3, 2 } },
-  { "Pentatonic", TUNING_19EDO, { 3, 3, 5, 3, 5 } },
-  { "Semaphore", TUNING_19EDO, { 3, 1, 3, 1, 3, 3, 1, 3, 1 } },
-  { "Negri", TUNING_19EDO, { 2, 2, 2, 2, 2, 1, 2, 2, 2, 2 } },
-  { "Sensi", TUNING_19EDO, { 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 1 } },
-  { "Kleismic", TUNING_19EDO, { 1, 3, 1, 1, 3, 1, 1, 3, 1, 3, 1 } },
-  { "Magic", TUNING_19EDO, { 3, 1, 1, 1, 3, 1, 1, 1, 3, 1, 1, 1, 1 } },
-  { "Kind-of Blues", TUNING_19EDO, { 4, 4, 1, 2, 4, 4 } },
-  // 22 EDO; for more: https://en.xen.wiki/w/22edo_modes
-  { "Diatonic", TUNING_22EDO, { 4, 4, 1, 4, 4, 4, 1 } },
-  { "Pentatonic", TUNING_22EDO, { 4, 4, 5, 4, 5 } },
-  { "Orwell", TUNING_22EDO, { 3, 2, 3, 2, 3, 2, 3, 2, 2 } },
-  { "Porcupine", TUNING_22EDO, { 4, 3, 3, 3, 3, 3, 3 } },
-  { "Pajara", TUNING_22EDO, { 2, 2, 3, 2, 2, 2, 3, 2, 2, 2 } },
-  // 24 EDO; for more: https://en.xen.wiki/w/24edo_scales
-  { "Diatonic 12", TUNING_24EDO, { 4, 4, 2, 4, 4, 4, 2 } },
-  { "Diatonic Soft", TUNING_24EDO, { 3, 5, 2, 3, 5, 4, 2 } },
-  { "Diatonic Neutral", TUNING_24EDO, { 4, 3, 3, 4, 3, 4, 3 } },
-  { "Pentatonic (12)", TUNING_24EDO, { 4, 4, 6, 4, 6 } },
-  { "Pentatonic (Haba)", TUNING_24EDO, { 5, 5, 5, 5, 4 } },
-  { "Invert Pentatonic", TUNING_24EDO, { 6, 3, 6, 6, 3 } },
-  { "Rast Maqam", TUNING_24EDO, { 4, 3, 3, 4, 4, 2, 1, 3 } },
-  { "Bayati Maqam", TUNING_24EDO, { 3, 3, 4, 4, 2, 1, 3, 4 } },
-  { "Hijaz Maqam", TUNING_24EDO, { 2, 6, 2, 4, 2, 1, 3, 4 } },
-  { "8-EDO", TUNING_24EDO, { 3, 3, 3, 3, 3, 3, 3, 3 } },
-  { "Wyschnegradsky", TUNING_24EDO, { 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1 } },
-  // 31 EDO; for more: https://en.xen.wiki/w/31edo#Scales
-  { "Diatonic", TUNING_31EDO, { 5, 5, 3, 5, 5, 5, 3 } },
-  { "Pentatonic", TUNING_31EDO, { 5, 5, 8, 5, 8 } },
-  { "Harmonic", TUNING_31EDO, { 5, 5, 4, 4, 4, 3, 3, 3 } },
-  { "Mavila", TUNING_31EDO, { 5, 3, 3, 3, 5, 3, 3, 3, 3 } },
-  { "Quartal", TUNING_31EDO, { 2, 2, 7, 2, 2, 7, 2, 7 } },
-  { "Orwell", TUNING_31EDO, { 4, 3, 4, 3, 4, 3, 4, 3, 3 } },
-  { "Neutral", TUNING_31EDO, { 4, 4, 4, 4, 4, 4, 4, 3 } },
-  { "Miracle", TUNING_31EDO, { 4, 3, 3, 3, 3, 3, 3, 3, 3, 3 } },
-  // 31 EDO ZETA PEAK;
-  { "Diatonic", TUNING_31EDO_ZETA, { 5, 5, 3, 5, 5, 5, 3 } },
-  { "Pentatonic", TUNING_31EDO_ZETA, { 5, 5, 8, 5, 8 } },
-  { "Harmonic", TUNING_31EDO_ZETA, { 5, 5, 4, 4, 4, 3, 3, 3 } },
-  { "Mavila", TUNING_31EDO_ZETA, { 5, 3, 3, 3, 5, 3, 3, 3, 3 } },
-  { "Quartal", TUNING_31EDO_ZETA, { 2, 2, 7, 2, 2, 7, 2, 7 } },
-  { "Orwell", TUNING_31EDO_ZETA, { 4, 3, 4, 3, 4, 3, 4, 3, 3 } },
-  { "Neutral", TUNING_31EDO_ZETA, { 4, 4, 4, 4, 4, 4, 4, 3 } },
-  { "Miracle", TUNING_31EDO_ZETA, { 4, 3, 3, 3, 3, 3, 3, 3, 3, 3 } },
-  // 41 EDO; for more: https://en.xen.wiki/w/41edo#Scales_and_modes
-  { "Diatonic", TUNING_41EDO, { 7, 7, 3, 7, 7, 7, 3 } },
-  { "Pentatonic", TUNING_41EDO, { 7, 7, 10, 7, 10 } },
-  { "Pure Major", TUNING_41EDO, { 7, 6, 4, 7, 6, 7, 4 } },
-  { "5-limit Chromatic", TUNING_41EDO, { 4, 3, 4, 2, 4, 3, 4, 4, 2, 4, 3, 4 } },
-  { "7-limit Chromatic", TUNING_41EDO, { 3, 4, 2, 4, 4, 3, 4, 2, 4, 3, 3, 4 } },
-  { "Harmonic", TUNING_41EDO, { 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 2, 3 } },
-  { "Middle East-ish", TUNING_41EDO, { 7, 5, 7, 5, 5, 7, 5 } },
-  { "Thai", TUNING_41EDO, { 6, 6, 6, 6, 6, 6, 5 } },
-  { "Slendro", TUNING_41EDO, { 8, 8, 8, 8, 9 } },
-  { "Pelog / Mavila", TUNING_41EDO, { 8, 5, 5, 8, 5, 5, 5 } },
-  // 53 EDO
-  { "Diatonic", TUNING_53EDO, { 9, 9, 4, 9, 9, 9, 4 } },
-  { "Pentatonic", TUNING_53EDO, { 9, 9, 13, 9, 13 } },
-  { "Rast Makam", TUNING_53EDO, { 9, 8, 5, 9, 9, 4, 4, 5 } },
-  { "Usshak Makam", TUNING_53EDO, { 7, 6, 9, 9, 4, 4, 5, 9 } },
-  { "Hicaz Makam", TUNING_53EDO, { 5, 12, 5, 9, 4, 9, 9 } },
-  { "Orwell", TUNING_53EDO, { 7, 5, 7, 5, 7, 5, 7, 5, 5 } },
-  { "Sephiroth", TUNING_53EDO, { 6, 5, 5, 6, 5, 5, 6, 5, 5, 5 } },
-  { "Smitonic", TUNING_53EDO, { 11, 11, 3, 11, 3, 11, 3 } },
-  { "Slendric", TUNING_53EDO, { 7, 3, 7, 3, 7, 3, 7, 3, 7, 3, 3 } },
-  { "Semiquartal", TUNING_53EDO, { 9, 2, 9, 2, 9, 2, 9, 2, 9 } },
-  // 72 EDO
-  { "Diatonic", TUNING_72EDO, { 12, 12, 6, 12, 12, 12, 6 } },
-  { "Pentatonic", TUNING_72EDO, { 12, 12, 18, 12, 18 } },
-  { "Ben Johnston", TUNING_72EDO, { 6, 6, 6, 5, 5, 5, 9, 8, 4, 4, 7, 7 } },
-  { "18-EDO", TUNING_72EDO, { 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4 } },
-  { "Miracle", TUNING_72EDO, { 5, 2, 5, 2, 5, 2, 2, 5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 5, 2 } },
-  { "Marvolo", TUNING_72EDO, { 5, 5, 5, 5, 5, 5, 5, 2, 5, 5, 5, 5, 5, 5 } },
-  { "Catakleismic", TUNING_72EDO, { 4, 7, 4, 4, 4, 7, 4, 4, 4, 7, 4, 4, 4, 7, 4 } },
-  { "Palace", TUNING_72EDO, { 10, 9, 11, 12, 10, 9, 11 } },
-  // BP
-  { "Lambda", TUNING_BP, { 2, 1, 2, 1, 2, 1, 2, 1, 1 } },
-  // Alpha
-  { "Super Meta Lydian", TUNING_ALPHA, { 3, 2, 2, 2 } },
-  // Beta
-  { "Super Meta Lydian", TUNING_BETA, { 3, 3, 3, 2 } },
-  // Gamma
-  { "Super Meta Lydian", TUNING_GAMMA, { 6, 5, 5, 4 } },
   // Custom EDO scales (chromatic = no filtering)
   { "Chromatic", TUNING_CUSTOM_1, { 0 } },
   { "Chromatic", TUNING_CUSTOM_2, { 0 } },
   { "Chromatic", TUNING_CUSTOM_3, { 0 } },
-  { "Chromatic", TUNING_CUSTOM_4, { 0 } }
+  { "Chromatic", TUNING_CUSTOM_4, { 0 } },
+  { "Chromatic", TUNING_CUSTOM_5, { 0 } },
+  { "Chromatic", TUNING_CUSTOM_6, { 0 } },
+  { "Chromatic", TUNING_CUSTOM_7, { 0 } },
+  { "Chromatic", TUNING_CUSTOM_8, { 0 } },
+  { "Chromatic", TUNING_CUSTOM_9, { 0 } },
+  { "Chromatic", TUNING_CUSTOM_10, { 0 } },
+  { "Chromatic", TUNING_CUSTOM_11, { 0 } },
+  { "Chromatic", TUNING_CUSTOM_12, { 0 } }
 };
 const byte scaleCount = sizeof(scaleOptions) / sizeof(scaleDef);
 
@@ -1099,217 +858,7 @@ public:
     return temp;
   }
 };
-/*
-    This class defines a palette, which is
-    a map of musical scale degrees to
-    colors. A palette is tied to a specific
-    tuning but not to a specific layout.
-  */
-class paletteDef {
-public:
-  colorDef swatch[MAX_SCALE_DIVISIONS];  // the different colors used in this palette
-  byte colorNum[MAX_SCALE_DIVISIONS];    // map key (c,d...) to swatches
-  colorDef getColor(byte givenStepFromC) {
-    return swatch[colorNum[givenStepFromC] - 1];
-  }
-  float getHue(byte givenStepFromC) {
-    return getColor(givenStepFromC).hue;
-  }
-  byte getSat(byte givenStepFromC) {
-    return getColor(givenStepFromC).sat;
-  }
-  byte getVal(byte givenStepFromC) {
-    return getColor(givenStepFromC).val;
-  }
-};
-/*
-    Palettes are defined by creating
-    a set of colors, and then making
-    an array of numbers that map the
-    intervals of that tuning to the
-    chosen colors. It's like paint
-    by numbers! Note that the indexes
-    start with 1, because the arrays are
-    padded with 0 for entries after
-    those intialized.
-  */
-paletteDef palette[] = {
-  // 12 EDO
-  { { { HUE_NONE, SAT_BW, 64 }, { 200, 60, VALUE_SHADE }, { HUE_BLUE, SAT_VIVID, VALUE_SHADE }, { 230, 240, VALUE_NORMAL }, { HUE_PURPLE, SAT_VIVID, VALUE_NORMAL }, { 270, SAT_VIVID, VALUE_NORMAL } }, { 6, 1, 2, 1, 2, 2, 1, 4, 1, 2, 1, 2 } },
-  // 17 EDO
-  { { { HUE_NONE, SAT_BW, VALUE_NORMAL }, { HUE_INDIGO, SAT_VIVID, VALUE_NORMAL }, { HUE_RED, SAT_VIVID, VALUE_NORMAL } }, { 1, 2, 3, 1, 2, 3, 1, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1 } },
-  // 19 EDO
-  { {
-      { HUE_NONE, SAT_BW, VALUE_NORMAL }  // n
-      ,
-      { HUE_YELLOW, SAT_VIVID, VALUE_NORMAL }  //  #
-      ,
-      { HUE_BLUE, SAT_VIVID, VALUE_NORMAL }  //  b
-      ,
-      { HUE_MAGENTA, SAT_VIVID, VALUE_NORMAL }  // enh
-    },
-    { 1, 2, 3, 1, 2, 3, 1, 4, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 4 } },
-  // 22 EDO
-  { {
-      { HUE_NONE, SAT_BW, VALUE_NORMAL }  // n
-      ,
-      { HUE_BLUE, SAT_VIVID, VALUE_NORMAL }  // ^
-      ,
-      { HUE_MAGENTA, SAT_VIVID, VALUE_NORMAL }  // mid
-      ,
-      { HUE_YELLOW, SAT_VIVID, VALUE_NORMAL }  // v
-    },
-    { 1, 2, 3, 4, 1, 2, 3, 4, 1, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1 } },
-  // 24 EDO
-  { {
-      { HUE_NONE, SAT_BW, VALUE_NORMAL }  // n
-      ,
-      { HUE_LIME, SAT_DULL, VALUE_SHADE }  //  +
-      ,
-      { HUE_CYAN, SAT_VIVID, VALUE_NORMAL }  //  #/b
-      ,
-      { HUE_INDIGO, SAT_DULL, VALUE_SHADE }  //  d
-      ,
-      { HUE_CYAN, SAT_DULL, VALUE_SHADE }  // enh
-    },
-    { 1, 2, 3, 4, 1, 2, 3, 4, 1, 5, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 5 } },
-  // 31 EDO
-  { {
-      { HUE_NONE, SAT_BW, VALUE_NORMAL }  // n
-      ,
-      { HUE_RED, SAT_DULL, VALUE_NORMAL }  //  +
-      ,
-      { HUE_YELLOW, SAT_DULL, VALUE_SHADE }  //  #
-      ,
-      { HUE_CYAN, SAT_DULL, VALUE_SHADE }  //  b
-      ,
-      { HUE_INDIGO, SAT_DULL, VALUE_NORMAL }  //  d
-      ,
-      { HUE_RED, SAT_DULL, VALUE_SHADE }  //  enh E+ Fb
-      ,
-      { HUE_INDIGO, SAT_DULL, VALUE_SHADE }  //  enh E# Fd
-    },
-    { 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 6, 7, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 6, 7 } },
-  // 41 EDO
-  { {
-      { HUE_NONE, SAT_BW, VALUE_NORMAL }  // n
-      ,
-      { HUE_RED, SAT_DULL, VALUE_NORMAL }  //  ^
-      ,
-      { HUE_BLUE, SAT_VIVID, VALUE_NORMAL }  //  +
-      ,
-      { HUE_CYAN, SAT_DULL, VALUE_SHADE }  //  b
-      ,
-      { HUE_GREEN, SAT_DULL, VALUE_SHADE }  //  #
-      ,
-      { HUE_MAGENTA, SAT_DULL, VALUE_NORMAL }  //  d
-      ,
-      { HUE_YELLOW, SAT_VIVID, VALUE_NORMAL }  //  v
-    },
-    { 1, 2, 3, 4, 5, 6, 7, 1, 2, 3, 4, 5, 6, 7, 1, 2, 3, 1, 2, 3, 4, 5, 6, 7,
-      1, 2, 3, 4, 5, 6, 7, 1, 2, 3, 4, 5, 6, 7, 1, 6, 7 } },
-  // 43 EDO
-  { {
-      { HUE_NONE, SAT_BW, VALUE_NORMAL }  // n
-      ,
-      { HUE_RED, SAT_DULL, VALUE_NORMAL }  //  ^
-      ,
-      { HUE_BLUE, SAT_VIVID, VALUE_NORMAL }  //  +
-      ,
-      { HUE_CYAN, SAT_DULL, VALUE_SHADE }  //  b
-      ,
-      { HUE_GREEN, SAT_DULL, VALUE_SHADE }  //  #
-      ,
-      { HUE_MAGENTA, SAT_DULL, VALUE_NORMAL }  //  d
-      ,
-      { HUE_YELLOW, SAT_VIVID, VALUE_NORMAL }  //  v
-    },
-    { 1, 2, 3, 4, 5, 6, 7, 1, 2, 3, 4, 5, 6, 7, 1, 2, 3, 1, 2, 3, 4, 5, 6, 7,
-      1, 2, 3, 4, 5, 6, 7, 1, 2, 3, 4, 5, 6, 7, 1, 6, 7 } },
-  // 53 EDO
-  { {
-      { HUE_NONE, SAT_BW, VALUE_NORMAL }  // n
-      ,
-      { HUE_ORANGE, SAT_VIVID, VALUE_NORMAL }  //  ^
-      ,
-      { HUE_MAGENTA, SAT_DULL, VALUE_NORMAL }  //  L
-      ,
-      { HUE_INDIGO, SAT_VIVID, VALUE_NORMAL }  // bv
-      ,
-      { HUE_GREEN, SAT_VIVID, VALUE_SHADE }  // b
-      ,
-      { HUE_YELLOW, SAT_VIVID, VALUE_SHADE }  // #
-      ,
-      { HUE_RED, SAT_VIVID, VALUE_NORMAL }  // #^
-      ,
-      { HUE_PURPLE, SAT_DULL, VALUE_NORMAL }  //  7
-      ,
-      { HUE_CYAN, SAT_VIVID, VALUE_SHADE }  //  v
-    },
-    { 1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3, 9, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-      1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3, 9 } },
-  // 72 EDO
-  { {
-      { HUE_NONE, SAT_BW, VALUE_NORMAL }  // n
-      ,
-      { HUE_GREEN, SAT_DULL, VALUE_SHADE }  // ^
-      ,
-      { HUE_RED, SAT_DULL, VALUE_SHADE }  // L
-      ,
-      { HUE_PURPLE, SAT_DULL, VALUE_SHADE }  // +/d
-      ,
-      { HUE_BLUE, SAT_DULL, VALUE_SHADE }  // 7
-      ,
-      { HUE_YELLOW, SAT_DULL, VALUE_SHADE }  // v
-      ,
-      { HUE_INDIGO, SAT_VIVID, VALUE_SHADE }  // #/b
-    },
-    { 1, 2, 3, 4, 5, 6, 7, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6, 7, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6,
-      7, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6, 7, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6, 7, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6 } },
-  // BOHLEN PIERCE
-  { { { HUE_NONE, SAT_BW, VALUE_NORMAL }, { HUE_INDIGO, SAT_VIVID, VALUE_NORMAL }, { HUE_RED, SAT_VIVID, VALUE_NORMAL } }, { 1, 2, 3, 1, 2, 3, 1, 1, 2, 3, 1, 2, 3 } },
-  // ALPHA
-  { {
-      { HUE_NONE, SAT_BW, VALUE_NORMAL }  // n
-      ,
-      { HUE_YELLOW, SAT_VIVID, VALUE_NORMAL }  // #
-      ,
-      { HUE_INDIGO, SAT_VIVID, VALUE_NORMAL }  // d
-      ,
-      { HUE_LIME, SAT_VIVID, VALUE_NORMAL }  // +
-      ,
-      { HUE_RED, SAT_VIVID, VALUE_NORMAL }  // enharmonic
-      ,
-      { HUE_CYAN, SAT_VIVID, VALUE_NORMAL }  // b
-    },
-    { 1, 2, 3, 4, 1, 2, 3, 5, 6 } },
-  // BETA
-  { {
-      { HUE_NONE, SAT_BW, VALUE_NORMAL }  // n
-      ,
-      { HUE_INDIGO, SAT_VIVID, VALUE_NORMAL }  // #
-      ,
-      { HUE_RED, SAT_VIVID, VALUE_NORMAL }  // b
-      ,
-      { HUE_MAGENTA, SAT_DULL, VALUE_NORMAL }  // enharmonic
-    },
-    { 1, 2, 3, 1, 4, 1, 2, 3, 1, 2, 3 } },
-  // GAMMA
-  { {
-      { HUE_NONE, SAT_BW, VALUE_NORMAL }  // n
-      ,
-      { HUE_RED, SAT_VIVID, VALUE_NORMAL }  // b
-      ,
-      { HUE_BLUE, SAT_VIVID, VALUE_NORMAL }  // #
-      ,
-      { HUE_YELLOW, SAT_VIVID, VALUE_NORMAL }  // n^
-      ,
-      { HUE_PURPLE, SAT_VIVID, VALUE_NORMAL }  // b^
-      ,
-      { HUE_GREEN, SAT_VIVID, VALUE_NORMAL }  // #^
-    },
-    { 1, 4, 2, 5, 3, 6, 1, 4, 1, 4, 2, 5, 3, 6, 1, 4, 2, 5, 3, 6 } },
-};
+
 
 // @presets
 /*
@@ -1832,9 +1381,6 @@ void setLEDcolorCodes() {
         paletteIndex = current.keyDegree(paletteIndex);
       }
       switch (colorMode) {
-        case TIERED_COLOR_MODE:  // This mode sets the color based on the palettes defined above.
-          setColor = palette[current.tuningIndex].getColor(paletteIndex);
-          break;
         case RAINBOW_MODE:  // This mode assigns the root note as red, and the rest as saturated spectrum colors across the rainbow.
           setColor = { 360 * ((float)paletteIndex / (float)current.tuning().cycleLength), SAT_VIVID, VALUE_NORMAL };
           break;
@@ -1845,113 +1391,7 @@ void setLEDcolorCodes() {
             float semipaletteIndex = fmodf(h[i].stepsFromC + (octaveCycleLength * 256.0), octaveCycleLength);
             float keyDegree = fmodf(semipaletteIndex + (current.tuning().spanCtoA() - current.keyStepsFromA), octaveCycleLength);
             float fifthSize = ((ratioToCents(3.0 / 2.0)) / stepSize);
-            float reverseFifth = fifthSize;
-            switch (current.tuningIndex) {
-              case TUNING_17EDO:
-                {
-                  reverseFifth = 12;
-                }
-                break;  // reverse hash of (10*x)%17=x where 10 steps is a 17EDO fifth
-              case TUNING_19EDO:
-                {
-                  reverseFifth = 7;
-                }
-                break;  // reverse hash of (11*x)%19=x where 11 steps is a 19EDO fifth
-              case TUNING_22EDO:
-                {
-                  reverseFifth = 17;
-                }
-                break;  // reverse hash of (13*x)%22=x where 13 steps is a 22EDO fifth
-              case TUNING_24EDO:
-                {
-                  reverseFifth = 11;
-                }
-                break;  // hand-picked best-fit value. This tuning is very unruly
-              case TUNING_31EDO:
-                {
-                  reverseFifth = 19;
-                }
-                break;  // reverse hash of (18*x)%31=x where 18 steps is a 31EDO fifth
-              case TUNING_31EDO_ZETA:
-                {
-                  reverseFifth = 19;
-                }
-                break;
-              case TUNING_41EDO:
-                {
-                  reverseFifth = 12;
-                }
-                break;  // reverse hash of (24*x)%41=x where 24 steps is a 41EDO fifth
-              case TUNING_43EDO:
-                {
-                  reverseFifth = 31;
-                }
-                break;  // reverse hash of (25*x)%43=x where 25 steps is a 43EDO fifth
-              case TUNING_46EDO:
-                {
-                  reverseFifth = 29;
-                }
-                break;  // reverse hash of (27*x)%46=x where 27 steps is a 46EDO fifth
-              case TUNING_53EDO:
-                {
-                  reverseFifth = 12;
-                }
-                break;  // reverse hash of (31*x)%53=x where 31 steps is a 53EDO fifth
-              case TUNING_58EDO:
-                {
-                  reverseFifth = 12;
-                }
-                break;  // reverse hash for 29EDO (2 chains of 29 EDO fifths in 58 EDO)
-              case TUNING_58EDO_ZETA:
-                {
-                  reverseFifth = 12;
-                }
-                break;
-              case TUNING_72EDO:
-                {
-                  reverseFifth = 7;
-                }
-                break;  // reverse hash for 12EDO (6 chains of 12 EDO fifths in 72 EDO)
-              case TUNING_72EDO_ZETA:
-                {
-                  reverseFifth = 7;
-                }
-                break;
-              case TUNING_80EDO:
-                {
-                  reverseFifth = 63;
-                }
-                break;  // reverse hash of (47*x)%80=x where 47 steps is an 80EDO fifth
-              case TUNING_87EDO:
-                {
-                  reverseFifth = 41;
-                }
-                break;  // A hand-picked value, seems to work. 46 also works
-              case TUNING_BP:
-                {
-                  reverseFifth = 5;
-                }
-                break;  // A hand-picked value; 23 and 64 also work
-              case TUNING_ALPHA:
-                {
-                  reverseFifth = 5;
-                }
-                break;  // A hand-picked value
-              case TUNING_BETA:
-                {
-                  reverseFifth = 7;
-                }
-                break;  // reverse hash of (11*x)%19=x where 11 steps is a 19EDO equivalent fifth
-              case TUNING_GAMMA:
-                {
-                  reverseFifth = 12;
-                }
-                break;  // reverse hash for 17EDO(2 chains of 17 EDO fifths in 34 EDO equivalent)
-              default:
-                {
-                  reverseFifth = fifthSize;
-                }  // either the tuning has no fifths or scrambling colors using fifths works
-            }
+            float reverseFifth = fifthSize;  // works for all tunings including custom EDOs
 
             float paletteIndexOfFifths = fmodf((keyDegree * reverseFifth), octaveCycleLength);
             setColor = { 360.0f * (paletteIndexOfFifths / (1200.0f / stepSize)), SAT_VIVID, VALUE_NORMAL };
@@ -4743,7 +4183,7 @@ struct SettingsHeader {
   uint8_t defaultProfileIndex;
 };
 
-constexpr uint8_t CURRENT_SETTINGS_VERSION = 2;  // bumped to 2 for custom EDO settings
+constexpr uint8_t CURRENT_SETTINGS_VERSION = 3;  // bumped to 3 for expanded custom EDO slots
 constexpr uint8_t PROFILE_COUNT = 9;
 constexpr uint8_t DEFAULT_PROFILE_INDEX = 0;
 
@@ -4804,6 +4244,14 @@ enum class SettingKey : uint8_t {
   CustomEDO2,
   CustomEDO3,
   CustomEDO4,
+  CustomEDO5,
+  CustomEDO6,
+  CustomEDO7,
+  CustomEDO8,
+  CustomEDO9,
+  CustomEDO10,
+  CustomEDO11,
+  CustomEDO12,
   // This must remain last – it gives the total number of settings.
   NumSettings
 };
@@ -4875,6 +4323,14 @@ const uint8_t factoryDefaults[NUM_SETTINGS] = {
   /* CustomEDO2                   */ 0,
   /* CustomEDO3                   */ 0,
   /* CustomEDO4                   */ 0,
+  /* CustomEDO5                   */ 0,
+  /* CustomEDO6                   */ 0,
+  /* CustomEDO7                   */ 0,
+  /* CustomEDO8                   */ 0,
+  /* CustomEDO9                   */ 0,
+  /* CustomEDO10                  */ 0,
+  /* CustomEDO11                  */ 0,
+  /* CustomEDO12                  */ 0,
 };
 
 // ==================================================
@@ -5134,14 +4590,16 @@ GEMPage menuPageCustomEDO("Custom EDO", menuPageTuning);
 GEMItem menuGotoCustomEDO("Custom EDO...", menuPageCustomEDO);
 
 // Runtime variables linked to the menu spinners
-int customEdoSlotSelect = 1;   // 1-4, displayed to user
+int customEdoSlotSelect = 1;   // 1-12, displayed to user
 int customEdoDivisions = 12;   // the EDO value to generate
 
-// Spinner options for slot selection (1-4)
+// Spinner options for slot selection (1-12)
 SelectOptionInt optionCustomSlot[] = {
-  { "Slot 1", 1 }, { "Slot 2", 2 }, { "Slot 3", 3 }, { "Slot 4", 4 }
+  { "Slot 1", 1 }, { "Slot 2", 2 }, { "Slot 3", 3 }, { "Slot 4", 4 },
+  { "Slot 5", 5 }, { "Slot 6", 6 }, { "Slot 7", 7 }, { "Slot 8", 8 },
+  { "Slot 9", 9 }, { "Slot 10", 10 }, { "Slot 11", 11 }, { "Slot 12", 12 }
 };
-GEMSelect selectCustomSlot(4, optionCustomSlot);
+GEMSelect selectCustomSlot(12, optionCustomSlot);
 
 // Spinner options for EDO division count (2-87)
 // We build this as a static array; 86 entries for 2..87
@@ -6010,7 +5468,7 @@ GEMItem menuItemToggleDynamicJI("Dynamic JI", useDynamicJustIntonation, universa
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-SelectOptionByte optionByteColor[] = { { "Rainbow", RAINBOW_MODE }, { "Tiered", TIERED_COLOR_MODE }, { "Alt", ALTERNATE_COLOR_MODE }, { "Fifths", RAINBOW_OF_FIFTHS_MODE }, { "Piano", PIANO_COLOR_MODE }, { "Alt Piano", PIANO_ALT_COLOR_MODE }, { "Filament", PIANO_INCANDESCENT_COLOR_MODE } };
+SelectOptionByte optionByteColor[] = { { "Rainbow", RAINBOW_MODE }, { "Alt", ALTERNATE_COLOR_MODE }, { "Fifths", RAINBOW_OF_FIFTHS_MODE }, { "Piano", PIANO_COLOR_MODE }, { "Alt Piano", PIANO_ALT_COLOR_MODE }, { "Filament", PIANO_INCANDESCENT_COLOR_MODE } };
 GEMSelect selectColor(sizeof(optionByteColor) / sizeof(SelectOptionByte), optionByteColor);
 PersistentCallbackInfo callbackInfoColorMode = {
   static_cast<uint8_t>(SettingKey::ColorMode),
