@@ -321,7 +321,13 @@ byte globalBrightness = BRIGHT_DIM;
 #define TUNING_ALPHA 19
 #define TUNING_BETA  20
 #define TUNING_GAMMA 21
-#define TUNINGCOUNT  22
+#define TUNING_CUSTOM_1 22
+#define TUNING_CUSTOM_2 23
+#define TUNING_CUSTOM_3 24
+#define TUNING_CUSTOM_4 25
+#define TUNINGCOUNT  26
+#define CUSTOM_TUNING_COUNT 4
+#define CUSTOM_LAYOUTS_PER_TUNING 5
 /*
     Note names and palette arrays are allocated in memory
     at runtime. Their usable size is based on the number
@@ -444,7 +450,123 @@ tuningDef tuningOptions[] = {
   { "Carlos Alpha", 9, 77.964990, { { "I", 0 }, { "I#", 1 }, { "II-", 2 }, { "II+", 3 }, { "III", 4 }, { "III#", 5 }, { "IV-", 6 }, { "IV+", 7 }, { "Ib", 8 } } },
   { "Carlos Beta", 11, 63.832933, { { "I", 0 }, { "I#", 1 }, { "IIb", 2 }, { "II", 3 }, { "II#", 4 }, { "III", 5 }, { "III#", 6 }, { "IVb", 7 }, { "IV", 8 }, { "IV#", 9 }, { "Ib", 10 } } },
   { "Carlos Gamma", 20, 35.0985422804, { { " I", 0 }, { "^I", 1 }, { " IIb", 2 }, { "^IIb", 3 }, { " I#", 4 }, { "^I#", 5 }, { " II", 6 }, { "^II", 7 }, { " III", 8 }, { "^III", 9 }, { " IVb", 10 }, { "^IVb", 11 }, { " III#", 12 }, { "^III#", 13 }, { " IV", 14 }, { "^IV", 15 }, { " Ib", 16 }, { "^Ib", 17 }, { " IV#", 18 }, { "^IV#", 19 } } },
+  // Custom EDO slots (populated at runtime by generateCustomTuning)
+  { "Custom 1", 12, 100.0, { { "0", 0 }, { "1", 1 }, { "2", 2 }, { "3", 3 }, { "4", 4 }, { "5", 5 }, { "6", 6 }, { "7", 7 }, { "8", 8 }, { "9", 9 }, { "10", 10 }, { "11", 11 } } },
+  { "Custom 2", 12, 100.0, { { "0", 0 }, { "1", 1 }, { "2", 2 }, { "3", 3 }, { "4", 4 }, { "5", 5 }, { "6", 6 }, { "7", 7 }, { "8", 8 }, { "9", 9 }, { "10", 10 }, { "11", 11 } } },
+  { "Custom 3", 12, 100.0, { { "0", 0 }, { "1", 1 }, { "2", 2 }, { "3", 3 }, { "4", 4 }, { "5", 5 }, { "6", 6 }, { "7", 7 }, { "8", 8 }, { "9", 9 }, { "10", 10 }, { "11", 11 } } },
+  { "Custom 4", 12, 100.0, { { "0", 0 }, { "1", 1 }, { "2", 2 }, { "3", 3 }, { "4", 4 }, { "5", 5 }, { "6", 6 }, { "7", 7 }, { "8", 8 }, { "9", 9 }, { "10", 10 }, { "11", 11 } } },
 };
+
+// @customEDO
+/*
+    Generative Custom EDO Engine
+    ============================
+    This section provides functions to generate tuning definitions and
+    isomorphic keyboard layouts for arbitrary EDO (Equal Division of
+    the Octave) values at runtime. Given an EDO number N (2-87), it:
+    
+    1. Computes stepSize = 1200/N cents
+    2. Generates numeric key names ("0", "1", ... "N-1")
+    3. Derives 5 isomorphic layouts from the patent-val fifth:
+       - Bosanquet-Wilson: axes are chromatic & diatonic semitones
+       - Harmonic Table: axes are fifth & minor third
+       - Wicki-Hayden: axes are whole tone & fifth
+       - Janko: axes are diatonic semitone & whole tone
+       - Full Gamut: sequential chromatic walk
+    
+    The mathematical basis:
+    Given N-EDO, the best fifth F = round(N * log2(3/2)).
+    The diatonic semitone s = 7*F - 4*N (the "chroma")
+    The chromatic semitone L = 3*N - 5*F (the "diesis")
+    The whole tone W = 2*F - N
+    The best minor third m3 = round(N * log2(6/5))
+*/
+
+// Static string buffer pool for custom key names.
+// 4 slots * 87 keys * 4 chars each ("0"-"86" + null) = 1392 bytes.
+char customKeyNameBuf[CUSTOM_TUNING_COUNT][MAX_SCALE_DIVISIONS][4];
+
+// Static string buffers for custom tuning display names.
+// e.g. "Custom 1: 31EDO" — 17 char GEM limit + null
+char customTuningNameBuf[CUSTOM_TUNING_COUNT][18];
+
+// Stored EDO values for each custom slot (0 = unconfigured)
+byte customEdoValues[CUSTOM_TUNING_COUNT] = { 0, 0, 0, 0 };
+
+/*
+    Compute the patent-val best approximation of a just ratio in N-EDO.
+    Returns round(N * log2(ratio)), i.e. the nearest integer step count.
+*/
+int bestStepsForRatio(byte N, float ratio) {
+  return (int)roundf((float)N * log2f(ratio));
+}
+
+/*
+    Generate the tuning definition for a custom EDO slot.
+    slotIndex: 0-3 (which custom slot)
+    edoDivisions: 2-87 (the N in N-EDO)
+*/
+void generateCustomTuning(byte slotIndex, byte edoDivisions) {
+  if (slotIndex >= CUSTOM_TUNING_COUNT) return;
+  if (edoDivisions < 2) edoDivisions = 2;
+  if (edoDivisions > MAX_SCALE_DIVISIONS) edoDivisions = MAX_SCALE_DIVISIONS;
+
+  byte tuningIdx = TUNING_CUSTOM_1 + slotIndex;
+  tuningDef& t = tuningOptions[tuningIdx];
+
+  // Update display name
+  snprintf(customTuningNameBuf[slotIndex], sizeof(customTuningNameBuf[slotIndex]),
+           "Custom %d: %dEDO", slotIndex + 1, edoDivisions);
+  t.name = customTuningNameBuf[slotIndex];
+
+  // Set cycle length and step size
+  t.cycleLength = edoDivisions;
+  t.stepSize = 1200.0f / (float)edoDivisions;
+
+  // Generate numeric key names and populate keyChoices.
+  // Key "0" maps to step 0 (A), so val_int offset = step index.
+  // To keep the convention where A=0 and lower keys are negative,
+  // we center the naming so that step 0 = "0" with offset 0.
+  for (byte i = 0; i < edoDivisions; i++) {
+    snprintf(customKeyNameBuf[slotIndex][i], 4, "%d", i);
+    t.keyChoices[i] = { customKeyNameBuf[slotIndex][i], (int)i };
+  }
+  // Zero out remaining entries
+  for (byte i = edoDivisions; i < MAX_SCALE_DIVISIONS; i++) {
+    t.keyChoices[i] = { "", 0 };
+  }
+
+  // Store the EDO value
+  customEdoValues[slotIndex] = edoDivisions;
+}
+
+/*
+    Derive the index of the first custom layout slot for a given custom tuning slot.
+    Custom layouts are appended after all hardcoded layouts.
+*/
+byte customLayoutBaseIndex(byte slotIndex);  // forward declaration
+
+/*
+    Generate 5 isomorphic layouts for a custom EDO slot.
+    slotIndex: 0-3 (which custom slot)
+    edoDivisions: 2-87 (the N in N-EDO)
+
+    Layout formulas derived from the patent-val fifth F = round(N * log2(3/2)):
+      Bosanquet-Wilson:  acrossSteps = -(7F - 4N),  dnLeftSteps = -(3N - 5F)
+      Harmonic Table:    acrossSteps = -F,           dnLeftSteps = round(N * log2(6/5))
+      Wicki-Hayden:      acrossSteps = 2F - N,       dnLeftSteps = -F
+      Janko:             acrossSteps = 3N - 5F,      dnLeftSteps = -(2F - N)
+      Full Gamut:        acrossSteps = 1,             dnLeftSteps = -9
+*/
+// Body defined later (after layoutOptions[]), because it references that array.
+void generateCustomLayouts(byte slotIndex, byte edoDivisions);
+
+/*
+    Rebuild the GEM key-select spinner for a custom tuning slot.
+    Body defined later (after menu globals), because it references
+    menuItemKeys[], selectKey[], current, menuPageScales, changeKey.
+*/
+void rebuildCustomKeySpinner(byte slotIndex);
 
 // @layout
 /*
@@ -673,9 +795,91 @@ layoutDef layoutOptions[] = {
 
   { "Harmonic Table", 0, 75, -20, 9, TUNING_GAMMA },  // Same mappings as for 34 EDO
   { "Compressed", 0, 65, -2, -1, TUNING_GAMMA },      // Difficult to map, has two rings of fifths
-  { "Full Gamut", 1, 65, 1, -9, TUNING_GAMMA }
+  { "Full Gamut", 1, 65, 1, -9, TUNING_GAMMA },
+  // Custom EDO layout slots (5 per custom tuning, populated at runtime by generateCustomLayouts)
+  // Custom 1
+  { "Bosanquet-Wilson", 0, 65, -1, -1, TUNING_CUSTOM_1 },
+  { "Harmonic Table",   0, 75, -7,  3, TUNING_CUSTOM_1 },
+  { "Wicki-Hayden",     1, 64,  2, -7, TUNING_CUSTOM_1 },
+  { "Janko",            0, 65,  1, -2, TUNING_CUSTOM_1 },
+  { "Full Gamut",       1, 75,  1, -9, TUNING_CUSTOM_1 },
+  // Custom 2
+  { "Bosanquet-Wilson", 0, 65, -1, -1, TUNING_CUSTOM_2 },
+  { "Harmonic Table",   0, 75, -7,  3, TUNING_CUSTOM_2 },
+  { "Wicki-Hayden",     1, 64,  2, -7, TUNING_CUSTOM_2 },
+  { "Janko",            0, 65,  1, -2, TUNING_CUSTOM_2 },
+  { "Full Gamut",       1, 75,  1, -9, TUNING_CUSTOM_2 },
+  // Custom 3
+  { "Bosanquet-Wilson", 0, 65, -1, -1, TUNING_CUSTOM_3 },
+  { "Harmonic Table",   0, 75, -7,  3, TUNING_CUSTOM_3 },
+  { "Wicki-Hayden",     1, 64,  2, -7, TUNING_CUSTOM_3 },
+  { "Janko",            0, 65,  1, -2, TUNING_CUSTOM_3 },
+  { "Full Gamut",       1, 75,  1, -9, TUNING_CUSTOM_3 },
+  // Custom 4
+  { "Bosanquet-Wilson", 0, 65, -1, -1, TUNING_CUSTOM_4 },
+  { "Harmonic Table",   0, 75, -7,  3, TUNING_CUSTOM_4 },
+  { "Wicki-Hayden",     1, 64,  2, -7, TUNING_CUSTOM_4 },
+  { "Janko",            0, 65,  1, -2, TUNING_CUSTOM_4 },
+  { "Full Gamut",       1, 75,  1, -9, TUNING_CUSTOM_4 }
 };
 const byte layoutCount = sizeof(layoutOptions) / sizeof(layoutDef);
+// Index of first custom layout slot = layoutCount - (CUSTOM_TUNING_COUNT * CUSTOM_LAYOUTS_PER_TUNING)
+byte customLayoutBaseIndex(byte slotIndex) {
+  return layoutCount - (CUSTOM_TUNING_COUNT - slotIndex) * CUSTOM_LAYOUTS_PER_TUNING;
+}
+
+// Implementation of generateCustomLayouts (declared in @customEDO section above).
+// Placed here because it needs layoutOptions[] and customLayoutBaseIndex().
+void generateCustomLayouts(byte slotIndex, byte edoDivisions) {
+  if (slotIndex >= CUSTOM_TUNING_COUNT) return;
+  if (edoDivisions < 2) edoDivisions = 2;
+  if (edoDivisions > MAX_SCALE_DIVISIONS) edoDivisions = MAX_SCALE_DIVISIONS;
+
+  byte tuningIdx = TUNING_CUSTOM_1 + slotIndex;
+  byte baseIdx = customLayoutBaseIndex(slotIndex);
+
+  // Compute patent-val fifth
+  int F = bestStepsForRatio(edoDivisions, 1.5f);  // 3/2
+
+  // Compute derived intervals
+  int chromaSemitone = 7 * F - 4 * (int)edoDivisions;  // "chroma" s
+  int diatonicSemitone = 3 * (int)edoDivisions - 5 * F; // "diesis" L
+  int wholeTone = 2 * F - (int)edoDivisions;             // W
+  int minorThird = bestStepsForRatio(edoDivisions, 1.2f); // 6/5
+
+  // Clamp all step values to int8_t range for safety
+  auto clampI8 = [](int v) -> int8_t {
+    if (v > 127) return 127;
+    if (v < -128) return -128;
+    return (int8_t)v;
+  };
+
+  // Layout 0: Bosanquet-Wilson
+  layoutOptions[baseIdx + 0].acrossSteps = clampI8(-chromaSemitone);
+  layoutOptions[baseIdx + 0].dnLeftSteps = clampI8(-diatonicSemitone);
+  layoutOptions[baseIdx + 0].tuning = tuningIdx;
+
+  // Layout 1: Harmonic Table
+  layoutOptions[baseIdx + 1].acrossSteps = clampI8(-F);
+  layoutOptions[baseIdx + 1].dnLeftSteps = clampI8(minorThird);
+  layoutOptions[baseIdx + 1].tuning = tuningIdx;
+
+  // Layout 2: Wicki-Hayden
+  layoutOptions[baseIdx + 2].acrossSteps = clampI8(wholeTone);
+  layoutOptions[baseIdx + 2].dnLeftSteps = clampI8(-F);
+  layoutOptions[baseIdx + 2].tuning = tuningIdx;
+
+  // Layout 3: Janko
+  layoutOptions[baseIdx + 3].acrossSteps = clampI8(diatonicSemitone);
+  layoutOptions[baseIdx + 3].dnLeftSteps = clampI8(-wholeTone);
+  layoutOptions[baseIdx + 3].tuning = tuningIdx;
+
+  // Layout 4: Full Gamut (always the same)
+  layoutOptions[baseIdx + 4].acrossSteps = 1;
+  layoutOptions[baseIdx + 4].dnLeftSteps = -9;
+  layoutOptions[baseIdx + 4].tuning = tuningIdx;
+}
+
 // @scales
 /*
     This class defines a scale pattern
@@ -803,7 +1007,12 @@ scaleDef scaleOptions[] = {
   // Beta
   { "Super Meta Lydian", TUNING_BETA, { 3, 3, 3, 2 } },
   // Gamma
-  { "Super Meta Lydian", TUNING_GAMMA, { 6, 5, 5, 4 } }
+  { "Super Meta Lydian", TUNING_GAMMA, { 6, 5, 5, 4 } },
+  // Custom EDO scales (chromatic = no filtering)
+  { "Chromatic", TUNING_CUSTOM_1, { 0 } },
+  { "Chromatic", TUNING_CUSTOM_2, { 0 } },
+  { "Chromatic", TUNING_CUSTOM_3, { 0 } },
+  { "Chromatic", TUNING_CUSTOM_4, { 0 } }
 };
 const byte scaleCount = sizeof(scaleOptions) / sizeof(scaleDef);
 
@@ -4534,7 +4743,7 @@ struct SettingsHeader {
   uint8_t defaultProfileIndex;
 };
 
-constexpr uint8_t CURRENT_SETTINGS_VERSION = 1;
+constexpr uint8_t CURRENT_SETTINGS_VERSION = 2;  // bumped to 2 for custom EDO settings
 constexpr uint8_t PROFILE_COUNT = 9;
 constexpr uint8_t DEFAULT_PROFILE_INDEX = 0;
 
@@ -4591,6 +4800,10 @@ enum class SettingKey : uint8_t {
   EnvelopeDecayIndex,
   EnvelopeSustainLevel,
   EnvelopeReleaseIndex,
+  CustomEDO1,
+  CustomEDO2,
+  CustomEDO3,
+  CustomEDO4,
   // This must remain last – it gives the total number of settings.
   NumSettings
 };
@@ -4658,6 +4871,10 @@ const uint8_t factoryDefaults[NUM_SETTINGS] = {
   /* EnvelopeDecayIndex           */ 3,
   /* EnvelopeSustainLevel         */ 127,
   /* EnvelopeReleaseIndex         */ 3,
+  /* CustomEDO1                   */ 0,
+  /* CustomEDO2                   */ 0,
+  /* CustomEDO3                   */ 0,
+  /* CustomEDO4                   */ 0,
 };
 
 // ==================================================
@@ -4911,6 +5128,89 @@ GEMItem menuGotoLoad("Load", menuPageLoad);
 GEMPage menuPageReboot("Ready to flash firmware!");
 
 // --------------------------------------------------------
+// Custom EDO Generator Menu
+// --------------------------------------------------------
+GEMPage menuPageCustomEDO("Custom EDO", menuPageTuning);
+GEMItem menuGotoCustomEDO("Custom EDO...", menuPageCustomEDO);
+
+// Runtime variables linked to the menu spinners
+int customEdoSlotSelect = 1;   // 1-4, displayed to user
+int customEdoDivisions = 12;   // the EDO value to generate
+
+// Spinner options for slot selection (1-4)
+SelectOptionInt optionCustomSlot[] = {
+  { "Slot 1", 1 }, { "Slot 2", 2 }, { "Slot 3", 3 }, { "Slot 4", 4 }
+};
+GEMSelect selectCustomSlot(4, optionCustomSlot);
+
+// Spinner options for EDO division count (2-87)
+// We build this as a static array; 86 entries for 2..87
+SelectOptionInt optionEdoDivisions[86];
+GEMSelect* selectEdoDivisions = nullptr;  // created in setup after populating the array
+
+// Forward-declared callback
+void onGenerateCustomEDO();
+
+GEMItem menuItemCustomSlot("Slot", customEdoSlotSelect, selectCustomSlot);
+GEMItem menuItemEdoDivisions("EDO divisions", customEdoDivisions);  // placeholder; replaced in setup
+GEMItem menuItemGenerate(">> Generate <<", onGenerateCustomEDO);
+
+// Forward-declare arrays used by onGenerateCustomEDO (defined later in file)
+extern GEMItem* menuItemTuning[];
+
+/*
+    Callback: when user selects "Generate" on the Custom EDO page.
+    Populates the chosen custom slot with the selected EDO,
+    generates matching layouts, saves to flash, and navigates home.
+*/
+void onGenerateCustomEDO() {
+  byte slot = (byte)(customEdoSlotSelect - 1);  // 0-based
+  byte edo = (byte)customEdoDivisions;
+  if (slot >= CUSTOM_TUNING_COUNT) slot = 0;
+  if (edo < 2) edo = 2;
+  if (edo > MAX_SCALE_DIVISIONS) edo = MAX_SCALE_DIVISIONS;
+
+  // Generate tuning and layouts
+  generateCustomTuning(slot, edo);
+  generateCustomLayouts(slot, edo);
+
+  // Persist the EDO value in settings
+  settings[static_cast<uint8_t>(SettingKey::CustomEDO1) + slot] = edo;
+  markSettingsDirty();
+
+  // Rebuild the GEM key spinner for this custom tuning (GEMSelect has no
+  // public length setter, so we must destroy and recreate it along with
+  // the associated GEMItem on the Scales page).
+  rebuildCustomKeySpinner(slot);
+
+  // Update the menu item title for the tuning list
+  byte tuningIdx = TUNING_CUSTOM_1 + slot;
+  if (menuItemTuning[tuningIdx]) {
+    menuItemTuning[tuningIdx]->setTitle(tuningOptions[tuningIdx].name.c_str());
+  }
+
+  // Switch to the newly generated tuning
+  current.tuningIndex = tuningIdx;
+  current.layoutIndex = current.layoutsBegin();
+  current.scaleIndex = 0;
+  current.keyStepsFromA = tuningOptions[tuningIdx].keyChoices[0].val_int;
+  settings[static_cast<uint8_t>(SettingKey::CurrentTuning)] = current.tuningIndex;
+  settings[static_cast<uint8_t>(SettingKey::CurrentLayout)] = current.layoutIndex;
+  settings[static_cast<uint8_t>(SettingKey::CurrentScale)] = current.scaleIndex;
+  settings[static_cast<uint8_t>(SettingKey::CurrentKeyStepsFromA)] = uint8_t(current.keyStepsFromA + 128);
+
+  showOnlyValidLayoutChoices();
+  showOnlyValidScaleChoices();
+  showOnlyValidKeyChoices();
+  updateLayoutAndRotate();
+  refreshMidiRouting();
+  resetSynthFreqs();
+
+  sendToLog("Generated Custom " + std::to_string(slot + 1) + ": " + std::to_string(edo) + " EDO");
+  menuHome();
+}
+
+// --------------------------------------------------------
 // Helper: Persistent Callback Info
 // --------------------------------------------------------
 // This helper struct is used to pass both the persistent setting's index
@@ -5052,6 +5352,35 @@ GEMItem* menuItemSaveProfile[PROFILE_COUNT];
 GEMItem* menuItemLoadProfile[PROFILE_COUNT];
 char saveProfileLabels[PROFILE_COUNT][24];
 char loadProfileLabels[PROFILE_COUNT][24];
+
+// Implementation of rebuildCustomKeySpinner (declared in @customEDO section).
+// Placed here because it needs menuItemKeys[], selectKey[], menuPageScales,
+// current, and changeKey — all of which are declared above this point.
+void rebuildCustomKeySpinner(byte slotIndex) {
+  byte tuningIdx = TUNING_CUSTOM_1 + slotIndex;
+  // Remove old menu item from the Scales page
+  if (menuItemKeys[tuningIdx]) {
+    menuItemKeys[tuningIdx]->remove();
+    delete menuItemKeys[tuningIdx];
+    menuItemKeys[tuningIdx] = nullptr;
+  }
+  // Delete old GEMSelect
+  if (selectKey[tuningIdx]) {
+    delete selectKey[tuningIdx];
+    selectKey[tuningIdx] = nullptr;
+  }
+  // Create new GEMSelect with updated cycleLength and keyChoices
+  selectKey[tuningIdx] = new GEMSelect(
+    tuningOptions[tuningIdx].cycleLength,
+    tuningOptions[tuningIdx].keyChoices
+  );
+  // Create new GEMItem and add to the Scales menu page
+  menuItemKeys[tuningIdx] = new GEMItem(
+    "Key", current.keyStepsFromA, *selectKey[tuningIdx], changeKey
+  );
+  menuPageScales.addMenuItem(*menuItemKeys[tuningIdx]);
+}
+
 /*
     We are now creating some GEMItems that let you
     1) select a value from a list of options,
@@ -5976,6 +6305,21 @@ void syncSettingsToRuntime() {
   updateEnvelopeParamsFromSettings();
   updateArpeggiatorTiming();
 
+  // Restore custom EDO tunings from saved settings
+  for (byte slot = 0; slot < CUSTOM_TUNING_COUNT; slot++) {
+    byte savedEdo = settings[static_cast<uint8_t>(SettingKey::CustomEDO1) + slot];
+    if (savedEdo >= 2 && savedEdo <= MAX_SCALE_DIVISIONS) {
+      generateCustomTuning(slot, savedEdo);
+      generateCustomLayouts(slot, savedEdo);
+      rebuildCustomKeySpinner(slot);
+      // Update the tuning menu item title
+      byte tuningIdx = TUNING_CUSTOM_1 + slot;
+      if (menuItemTuning[tuningIdx]) {
+        menuItemTuning[tuningIdx]->setTitle(tuningOptions[tuningIdx].name.c_str());
+      }
+    }
+  }
+
   // Now *apply* them to the engine/UI:
   showOnlyValidLayoutChoices();   // for tuning/layout
   showOnlyValidScaleChoices();
@@ -6225,6 +6569,20 @@ void setupMenu() {
     */
   menuPageMain.addMenuItem(menuGotoTuning);
   createTuningMenuItems();
+  // Add the Custom EDO generator submenu to the tuning page
+  menuPageTuning.addMenuItem(menuGotoCustomEDO);
+  // Initialize the EDO divisions spinner (values 2-87)
+  for (int i = 0; i < 86; i++) {
+    static char edoLabels[86][4];
+    snprintf(edoLabels[i], 4, "%d", i + 2);
+    optionEdoDivisions[i] = { edoLabels[i], i + 2 };
+  }
+  selectEdoDivisions = new GEMSelect(86, optionEdoDivisions);
+  // Replace the placeholder EDO divisions menu item with one using our spinner
+  static GEMItem menuItemEdoDivisionsReal("EDO", customEdoDivisions, *selectEdoDivisions);
+  menuPageCustomEDO.addMenuItem(menuItemCustomSlot);
+  menuPageCustomEDO.addMenuItem(menuItemEdoDivisionsReal);
+  menuPageCustomEDO.addMenuItem(menuItemGenerate);
   menuPageTuning.addMenuItem(menuItemToggleDynamicJI);
   menuPageTuning.addMenuItem(menuItemToggleJI_BPM);
   menuPageTuning.addMenuItem(menuItemSetJI_BPM);
