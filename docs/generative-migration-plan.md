@@ -97,7 +97,7 @@ Use this section as implementation proceeds.
 
 ### Phase Status
 
-- Phase 0: pending
+- Phase 0: in_progress (code landed; baseline fixture capture/diff pending on hardware)
 - Phase 1: pending
 - Phase 2: pending
 - Phase 3: pending
@@ -110,4 +110,5 @@ Use this section as implementation proceeds.
 
 ### Notes
 
+- 2026-02-09: Phase 0 harness implemented in code (`HEX_PHASE0_*` flags, baseline preset apply path, deterministic serial CSV dump, fixture hash) and host scripts/docs added. Phase 0 exit gate not yet met until baseline capture + parity diff are run on target hardware.
 - _Add date + summary for each phase completion, validation evidence, and any deviations._
