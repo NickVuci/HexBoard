@@ -6126,9 +6126,9 @@ void setupMenu() {
       To change the order of the menu, change the order in the code below.
     */
   menuPageMain.addMenuItem(menuGotoTuning);
-  createTuningMenuItems();
-  // Add the Custom EDO generator submenu to the tuning page
+  // Add the Custom EDO generator submenu as the first item on the tuning page
   menuPageTuning.addMenuItem(menuGotoCustomEDO);
+  createTuningMenuItems();
   // Initialize the EDO divisions spinner (values 2-87)
   for (int i = 0; i < 86; i++) {
     static char edoLabels[86][4];
