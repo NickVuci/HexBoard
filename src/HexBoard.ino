@@ -433,8 +433,8 @@ tuningDef tuningOptions[] = {
 
 // @customEDO
 /*
-    Generative Custom EDO Engine
-    ============================
+    Generative Custom EDO Engine - Nick Vuci 10022026
+    =================================================
     This section provides functions to generate tuning definitions and
     isomorphic keyboard layouts for arbitrary EDO (Equal Division of
     the Octave) values at runtime. Given an EDO number N (2-87), it:
@@ -2468,8 +2468,6 @@ int16_t justIntonationRetune(byte x) {
   int16_t pitchAdjustment = 0;
   float pitchAdjustmentCents = 0;
   float basePitchOffset = 0;
-  //int16_t degree = (current.keyDegree(h[x].stepsFromC + current.transpose + current.tuning().spanCtoA()));
-  //float buttonStepsFromA = degree;
   if (useJustIntonationBPM) {
     float buttonStepsFromA = -current.tuning().spanCtoA() - h[x].stepsFromC;
     // It was planned to use integer math but floating point arithmetics works fast enough so far
@@ -2483,7 +2481,6 @@ int16_t justIntonationRetune(byte x) {
     }
   }
   if (useDynamicJustIntonation && pressedKeyIDs.size() > 1) {
-    //bool ratioFound = false;  // I might need this one later
     bool preferSmallRatios = true;  // if false - the closest found ratio will be chosen from the ratio table
 
     // detune within a 1/4 of a step, avoid wild detuning but cover the entire pitch range
@@ -2496,10 +2493,6 @@ int16_t justIntonationRetune(byte x) {
       auto ratio = ratios[i];
       float ratio0 = ratio.first;
       float ratio1 = ratio.second;
-      //if(h[pressedKeyIDs[0]].note < h[x].note)
-      //{
-      //  std::swap(ratio1,ratio0);
-      //}
       float ratioCents = ratioToCents(ratio0 / ratio1);
 
       if (std::abs(deviation) > std::abs(ratioCents - EDOCents)) {
@@ -2507,15 +2500,11 @@ int16_t justIntonationRetune(byte x) {
         selectedRatio.first = ratio0;
         selectedRatio.second = ratio1;
         if (preferSmallRatios && std::abs(deviation) < errorThreshold) {
-          //ratioFound = true;
           break;
         }
       }
     }
-    //if(ratioFound)
-    {
-      pitchAdjustment += centsToRelativePitchBend(deviation + basePitchOffset);
-    }
+    pitchAdjustment += centsToRelativePitchBend(deviation + basePitchOffset);
   }
   h[x].jiRetune = pitchAdjustment;
   h[x].jiFrequencyMultiplier = pitchBendToFrequencyMultiplier(pitchAdjustment);
@@ -3888,17 +3877,7 @@ void animateMirror() {
     }
   }
 }
-/*
-  void animateOrbit() {
-    for (byte i = 0; i < LED_COUNT; i++) {                               // check every hex
-      if ((!(h[i].isCmd)) && (h[i].MIDIch) && ((h[i].inScale) || (!scaleLock))) {    // that is a held note
-        byte tempDir = (animFrame(i) % 6);
-        flagToAnimate(h[i].coordRow + vertical[tempDir], h[i].coordCol + horizontal[tempDir]);       // different neighbor each frame
-      }
-    }
-  }
-*/
-void animateOrbit() {           //BETTER ORBIT
+void animateOrbit() {
   const byte ORBIT_RADIUS = 2;  // Radius of the orbit
   const byte SLOW_FACTOR = 1;   // Slowdown factor for animation
 
@@ -6219,10 +6198,7 @@ void screenSaver() {
     if (!screenSaverOn) {
       screenSaverOn = 1;
       u8g2.setContrast(CONTRAST_SCREENSAVER);
-      //if(globalBrightness == BRIGHT_OFF)
-      {
-        u8g2.clear();
-      }
+      u8g2.clear();
     }
   }
 }
