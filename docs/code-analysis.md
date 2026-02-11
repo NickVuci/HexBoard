@@ -155,9 +155,11 @@ Represents a complete tuning system:
 | `name` | `char[18]` | Display name (≤17 chars, constrained by GEM menu width) |
 | `cycleLength` | `byte` | Steps per octave (e.g., 12 for 12-EDO, 31 for 31-EDO) |
 | `stepSize` | `float` | Cents per step (e.g., 100.0 for 12-EDO) |
-| `keyChoices[]` | `SelectOptionInt[87]` | GEM dropdown entries for key selection |
+| `stepsFromCtoA` | `int` | Steps from C to A in this tuning (e.g., -9 for 12-EDO) |
 
-Method `spanCtoA()` returns the number of steps from C to A in the given tuning — important for concert pitch reference.
+Method `spanCtoA()` returns `stepsFromCtoA` — the number of steps from C to A in the given tuning, important for concert pitch reference.
+
+A single shared `activeKeyChoices[87]` buffer holds the GEM dropdown entries for key selection, populated on-the-fly by `populateActiveKeyChoices()` when the active tuning changes. A `MutableGEMSelect` subclass allows updating the spinner's options pointer and length in place without destroying/recreating menu objects. *(Refactored from per-tuning `SelectOptionInt[87]` arrays embedded in each `tuningDef` — saved ~8.3 KB RAM.)*
 
 ### Envelope System
 
@@ -619,7 +621,7 @@ Every persistent menu item uses a `PersistentCallbackInfo` struct:
 
 - `showOnlyValidLayoutChoices()` — hides layouts for other tunings
 - `showOnlyValidScaleChoices()` — hides scales for other tunings
-- `showOnlyValidKeyChoices()` — updates key options for current tuning
+- `showOnlyValidKeyChoices()` — refreshes key spinner for current tuning via `refreshKeySpinner()`
 
 ---
 
@@ -691,7 +693,7 @@ Continuously polls the rotary encoder (`readKnob()`).
 
 | Issue | Suggestion | Status |
 |-------|------------|--------|
-| `tuningDef` has `SelectOptionInt[87]` × 13 tunings | Move to dynamically allocated only for the active tuning, or use PROGMEM | Open (~5 KB) |
+| ~~`tuningDef` has `SelectOptionInt[87]` × 13 tunings~~ | ~~Move to dynamically allocated only for the active tuning, or use PROGMEM~~ | **DONE** — replaced 13 per-tuning `keyChoices[87]` arrays (~9 KB) with a single shared `activeKeyChoices[87]` buffer (696 bytes) populated on-the-fly. Added `MutableGEMSelect` subclass for in-place option updates. Saved ~8.3 KB RAM. |
 | ~~General MIDI + Roland MT-32 instrument name tables~~ | ~~Store in flash with `__in_flash()`~~ | **DONE** — tables placed in flash via `__in_flash("midi")` |
 | `customKeyNameBuf[12][87][4]` = 4,176 bytes static | Allocate only for used custom tuning slots | Open (~3.5 KB) |
 | ~~`midiNoteToHexIndices` uses `std::vector<uint8_t>` × 128~~ | ~~Use a flat array with fixed max~~ | **DONE** — replaced with `uint8_t[128][16]` + count array |

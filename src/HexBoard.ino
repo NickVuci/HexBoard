@@ -367,11 +367,48 @@ public:
   std::string name;  // limit is 17 characters for GEM menu
   byte cycleLength;  // steps before period/cycle/octave repeats
   float stepSize;    // in cents, 100 = "normal" semitone.
-  SelectOptionInt keyChoices[MAX_SCALE_DIVISIONS];
+  int stepsFromCtoA; // steps from C to A in this tuning (e.g. -9 for 12-EDO)
   int spanCtoA() {
-    return keyChoices[0].val_int;
+    return stepsFromCtoA;
   }
 };
+
+/*
+    MutableGEMSelect — subclass of GEMSelect that allows changing the
+    options pointer and length after construction. GEMSelect declares
+    _length and _options as protected, so a subclass can access them.
+    This avoids having to destroy and recreate GEMSelect + GEMItem
+    objects (and re-add them to menu pages) whenever the tuning changes.
+*/
+class MutableGEMSelect : public GEMSelect {
+public:
+  MutableGEMSelect(byte length, SelectOptionInt* options)
+    : GEMSelect(length, options) {}
+  void setOptions(byte length, SelectOptionInt* options) {
+    _length = length;
+    _options = options;
+  }
+};
+
+/*
+    Shared key-choices buffer for the GEM key spinner.
+    Only one tuning's key choices are displayed at a time, so we
+    maintain a single buffer that gets populated on-the-fly when
+    the active tuning changes. This saves ~8.3 KB of RAM vs. the
+    previous design of embedding SelectOptionInt[87] in every tuningDef.
+*/
+SelectOptionInt activeKeyChoices[MAX_SCALE_DIVISIONS];
+
+// 12-EDO key names (in flash) — used by populateActiveKeyChoices()
+static const char* const edo12KeyNames[] __in_flash("tuning") = {
+  "C", "C#", "D", "Eb", "E", "F", "F#", "G", "G#", "A", "Bb", "B"
+};
+static const int edo12KeyValues[] __in_flash("tuning") = {
+  -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2
+};
+
+// Forward declaration — body defined after tuningOptions[] and customKeyNameBuf.
+void populateActiveKeyChoices(byte tuningIdx);
 /*
     Note that for all practical musical purposes,
     expressing step sizes to six significant figures is
@@ -419,20 +456,20 @@ EnvelopeParams envelopeParams;
     Values are precalculated by compiler, and MIDI 2.0 or later might benefit from it
   */
 tuningDef tuningOptions[] = {
-  { "12 EDO (Normal)", 12, 100.000, { { "C", -9 }, { "C#", -8 }, { "D", -7 }, { "Eb", -6 }, { "E", -5 }, { "F", -4 }, { "F#", -3 }, { "G", -2 }, { "G#", -1 }, { "A", 0 }, { "Bb", 1 }, { "B", 2 } } },
+  { "12 EDO (Normal)", 12, 100.000, -9 },
   // Custom EDO slots (populated at runtime by generateCustomTuning)
-  { "Custom 1", 12, 100.0, { { "0", 0 }, { "1", 1 }, { "2", 2 }, { "3", 3 }, { "4", 4 }, { "5", 5 }, { "6", 6 }, { "7", 7 }, { "8", 8 }, { "9", 9 }, { "10", 10 }, { "11", 11 } } },
-  { "Custom 2", 12, 100.0, { { "0", 0 }, { "1", 1 }, { "2", 2 }, { "3", 3 }, { "4", 4 }, { "5", 5 }, { "6", 6 }, { "7", 7 }, { "8", 8 }, { "9", 9 }, { "10", 10 }, { "11", 11 } } },
-  { "Custom 3", 12, 100.0, { { "0", 0 }, { "1", 1 }, { "2", 2 }, { "3", 3 }, { "4", 4 }, { "5", 5 }, { "6", 6 }, { "7", 7 }, { "8", 8 }, { "9", 9 }, { "10", 10 }, { "11", 11 } } },
-  { "Custom 4", 12, 100.0, { { "0", 0 }, { "1", 1 }, { "2", 2 }, { "3", 3 }, { "4", 4 }, { "5", 5 }, { "6", 6 }, { "7", 7 }, { "8", 8 }, { "9", 9 }, { "10", 10 }, { "11", 11 } } },
-  { "Custom 5", 12, 100.0, { { "0", 0 }, { "1", 1 }, { "2", 2 }, { "3", 3 }, { "4", 4 }, { "5", 5 }, { "6", 6 }, { "7", 7 }, { "8", 8 }, { "9", 9 }, { "10", 10 }, { "11", 11 } } },
-  { "Custom 6", 12, 100.0, { { "0", 0 }, { "1", 1 }, { "2", 2 }, { "3", 3 }, { "4", 4 }, { "5", 5 }, { "6", 6 }, { "7", 7 }, { "8", 8 }, { "9", 9 }, { "10", 10 }, { "11", 11 } } },
-  { "Custom 7", 12, 100.0, { { "0", 0 }, { "1", 1 }, { "2", 2 }, { "3", 3 }, { "4", 4 }, { "5", 5 }, { "6", 6 }, { "7", 7 }, { "8", 8 }, { "9", 9 }, { "10", 10 }, { "11", 11 } } },
-  { "Custom 8", 12, 100.0, { { "0", 0 }, { "1", 1 }, { "2", 2 }, { "3", 3 }, { "4", 4 }, { "5", 5 }, { "6", 6 }, { "7", 7 }, { "8", 8 }, { "9", 9 }, { "10", 10 }, { "11", 11 } } },
-  { "Custom 9", 12, 100.0, { { "0", 0 }, { "1", 1 }, { "2", 2 }, { "3", 3 }, { "4", 4 }, { "5", 5 }, { "6", 6 }, { "7", 7 }, { "8", 8 }, { "9", 9 }, { "10", 10 }, { "11", 11 } } },
-  { "Custom 10", 12, 100.0, { { "0", 0 }, { "1", 1 }, { "2", 2 }, { "3", 3 }, { "4", 4 }, { "5", 5 }, { "6", 6 }, { "7", 7 }, { "8", 8 }, { "9", 9 }, { "10", 10 }, { "11", 11 } } },
-  { "Custom 11", 12, 100.0, { { "0", 0 }, { "1", 1 }, { "2", 2 }, { "3", 3 }, { "4", 4 }, { "5", 5 }, { "6", 6 }, { "7", 7 }, { "8", 8 }, { "9", 9 }, { "10", 10 }, { "11", 11 } } },
-  { "Custom 12", 12, 100.0, { { "0", 0 }, { "1", 1 }, { "2", 2 }, { "3", 3 }, { "4", 4 }, { "5", 5 }, { "6", 6 }, { "7", 7 }, { "8", 8 }, { "9", 9 }, { "10", 10 }, { "11", 11 } } },
+  { "Custom 1",  12, 100.0, 0 },
+  { "Custom 2",  12, 100.0, 0 },
+  { "Custom 3",  12, 100.0, 0 },
+  { "Custom 4",  12, 100.0, 0 },
+  { "Custom 5",  12, 100.0, 0 },
+  { "Custom 6",  12, 100.0, 0 },
+  { "Custom 7",  12, 100.0, 0 },
+  { "Custom 8",  12, 100.0, 0 },
+  { "Custom 9",  12, 100.0, 0 },
+  { "Custom 10", 12, 100.0, 0 },
+  { "Custom 11", 12, 100.0, 0 },
+  { "Custom 12", 12, 100.0, 0 },
 };
 
 // @customEDO
@@ -472,6 +509,32 @@ char customTuningNameBuf[CUSTOM_TUNING_COUNT][18];
 byte customEdoValues[CUSTOM_TUNING_COUNT] = { 0 };
 
 /*
+    Populate the shared activeKeyChoices[] buffer for the given tuning.
+    For 12-EDO, uses the const name/value tables in flash.
+    For custom EDOs, uses the customKeyNameBuf string pool.
+*/
+void populateActiveKeyChoices(byte tuningIdx) {
+  byte len = tuningOptions[tuningIdx].cycleLength;
+  if (tuningIdx == TUNING_12EDO) {
+    for (byte i = 0; i < len && i < MAX_SCALE_DIVISIONS; i++) {
+      activeKeyChoices[i].name = edo12KeyNames[i];
+      activeKeyChoices[i].val_int = edo12KeyValues[i];
+    }
+  } else {
+    byte slotIndex = tuningIdx - TUNING_CUSTOM_1;
+    for (byte i = 0; i < len && i < MAX_SCALE_DIVISIONS; i++) {
+      activeKeyChoices[i].name = customKeyNameBuf[slotIndex][i];
+      activeKeyChoices[i].val_int = (int)i;
+    }
+  }
+  // Zero out remaining entries
+  for (byte i = len; i < MAX_SCALE_DIVISIONS; i++) {
+    activeKeyChoices[i].name = "";
+    activeKeyChoices[i].val_int = 0;
+  }
+}
+
+/*
     Compute the patent-val best approximation of a just ratio in N-EDO.
     Returns round(N * log2(ratio)), i.e. the nearest integer step count.
 */
@@ -501,18 +564,15 @@ void generateCustomTuning(byte slotIndex, byte edoDivisions) {
   t.cycleLength = edoDivisions;
   t.stepSize = 1200.0f / (float)edoDivisions;
 
-  // Generate numeric key names and populate keyChoices.
-  // Key "0" maps to step 0 (A), so val_int offset = step index.
-  // To keep the convention where A=0 and lower keys are negative,
-  // we center the naming so that step 0 = "0" with offset 0.
+  // Generate numeric key names in the string buffer pool.
+  // These are read later by populateActiveKeyChoices() when
+  // this tuning becomes active.
   for (byte i = 0; i < edoDivisions; i++) {
     snprintf(customKeyNameBuf[slotIndex][i], 4, "%d", i);
-    t.keyChoices[i] = { customKeyNameBuf[slotIndex][i], (int)i };
   }
-  // Zero out remaining entries
-  for (byte i = edoDivisions; i < MAX_SCALE_DIVISIONS; i++) {
-    t.keyChoices[i] = { "", 0 };
-  }
+
+  // Custom EDOs always have stepsFromCtoA = 0 (key "0" = A)
+  t.stepsFromCtoA = 0;
 
   // Store the EDO value
   customEdoValues[slotIndex] = edoDivisions;
@@ -540,9 +600,9 @@ byte customLayoutBaseIndex(byte slotIndex);  // forward declaration
 void generateCustomLayouts(byte slotIndex, byte edoDivisions);
 
 /*
-    Rebuild the GEM key-select spinner for a custom tuning slot.
+    Refresh the key spinner if a custom tuning slot is the active tuning.
     Body defined later (after menu globals), because it references
-    menuItemKeys[], selectKey[], current, menuPageScales, changeKey.
+    selectKey, current, and refreshKeySpinner().
 */
 void rebuildCustomKeySpinner(byte slotIndex);
 
@@ -4766,9 +4826,7 @@ void onGenerateCustomEDO() {
   settings[static_cast<uint8_t>(SettingKey::CustomEDO1) + slot] = edo;
   markSettingsDirty();
 
-  // Rebuild the GEM key spinner for this custom tuning (GEMSelect has no
-  // public length setter, so we must destroy and recreate it along with
-  // the associated GEMItem on the Scales page).
+  // Rebuild the GEM key spinner for this custom tuning
   rebuildCustomKeySpinner(slot);
 
   // Update the menu item title for the tuning list
@@ -4781,7 +4839,7 @@ void onGenerateCustomEDO() {
   current.tuningIndex = tuningIdx;
   current.layoutIndex = current.layoutsBegin();
   current.scaleIndex = 0;
-  current.keyStepsFromA = tuningOptions[tuningIdx].keyChoices[0].val_int;
+  current.keyStepsFromA = tuningOptions[tuningIdx].stepsFromCtoA;
   settings[static_cast<uint8_t>(SettingKey::CurrentTuning)] = current.tuningIndex;
   settings[static_cast<uint8_t>(SettingKey::CurrentLayout)] = current.layoutIndex;
   settings[static_cast<uint8_t>(SettingKey::CurrentScale)] = current.scaleIndex;
@@ -4789,7 +4847,7 @@ void onGenerateCustomEDO() {
 
   showOnlyValidLayoutChoices();
   showOnlyValidScaleChoices();
-  showOnlyValidKeyChoices();
+  refreshKeySpinner();
   updateLayoutAndRotate();
   refreshMidiRouting();
   resetSynthFreqs();
@@ -4934,39 +4992,35 @@ void loadProfileMenu(GEMCallbackData callbackData) {
 GEMItem* menuItemTuning[TUNINGCOUNT];
 GEMItem* menuItemLayout[layoutCount];
 GEMItem* menuItemScales[scaleCount];
-GEMSelect* selectKey[TUNINGCOUNT];
-GEMItem* menuItemKeys[TUNINGCOUNT];
+MutableGEMSelect* selectKey = nullptr;
+GEMItem* menuItemKey = nullptr;
 GEMItem* menuItemSaveProfile[PROFILE_COUNT];
 GEMItem* menuItemLoadProfile[PROFILE_COUNT];
 char saveProfileLabels[PROFILE_COUNT][24];
 char loadProfileLabels[PROFILE_COUNT][24];
 
+/*
+    Refresh the single key spinner to reflect the active tuning.
+    Populates the shared activeKeyChoices[] buffer and updates the
+    MutableGEMSelect in place — no destroy/recreate needed.
+*/
+void refreshKeySpinner() {
+  populateActiveKeyChoices(current.tuningIndex);
+  if (selectKey) {
+    selectKey->setOptions(tuningOptions[current.tuningIndex].cycleLength, activeKeyChoices);
+  }
+  sendToLog("menu: Key choices were updated.");
+}
+
 // Implementation of rebuildCustomKeySpinner (declared in @customEDO section).
-// Placed here because it needs menuItemKeys[], selectKey[], menuPageScales,
-// current, and changeKey — all of which are declared above this point.
+// Now simplified: only needs to refresh the spinner if the rebuilt slot
+// is the currently active tuning. The key name strings are already in
+// customKeyNameBuf; populateActiveKeyChoices() reads them on demand.
 void rebuildCustomKeySpinner(byte slotIndex) {
   byte tuningIdx = TUNING_CUSTOM_1 + slotIndex;
-  // Remove old menu item from the Scales page
-  if (menuItemKeys[tuningIdx]) {
-    menuItemKeys[tuningIdx]->remove();
-    delete menuItemKeys[tuningIdx];
-    menuItemKeys[tuningIdx] = nullptr;
+  if (tuningIdx == current.tuningIndex) {
+    refreshKeySpinner();
   }
-  // Delete old GEMSelect
-  if (selectKey[tuningIdx]) {
-    delete selectKey[tuningIdx];
-    selectKey[tuningIdx] = nullptr;
-  }
-  // Create new GEMSelect with updated cycleLength and keyChoices
-  selectKey[tuningIdx] = new GEMSelect(
-    tuningOptions[tuningIdx].cycleLength,
-    tuningOptions[tuningIdx].keyChoices
-  );
-  // Create new GEMItem and add to the Scales menu page
-  menuItemKeys[tuningIdx] = new GEMItem(
-    "Key", current.keyStepsFromA, *selectKey[tuningIdx], changeKey
-  );
-  menuPageScales.addMenuItem(*menuItemKeys[tuningIdx]);
 }
 
 /*
@@ -5916,7 +5970,6 @@ void syncSettingsToRuntime() {
     if (savedEdo >= 2 && savedEdo <= MAX_SCALE_DIVISIONS) {
       generateCustomTuning(slot, savedEdo);
       generateCustomLayouts(slot, savedEdo);
-      rebuildCustomKeySpinner(slot);
       // Update the tuning menu item title
       byte tuningIdx = TUNING_CUSTOM_1 + slot;
       if (menuItemTuning[tuningIdx]) {
@@ -5928,7 +5981,7 @@ void syncSettingsToRuntime() {
   // Now *apply* them to the engine/UI:
   showOnlyValidLayoutChoices();   // for tuning/layout
   showOnlyValidScaleChoices();
-  showOnlyValidKeyChoices();
+  refreshKeySpinner();            // populate key spinner for active tuning
   updateLayoutAndRotate();
   refreshMidiRouting();
   resetSynthFreqs();
@@ -5980,18 +6033,12 @@ void showOnlyValidScaleChoices() {
   sendToLog("menu: Scale choices were updated.");
 }
 /*
-    This procedure sets each key spinner menu item to be either
-    visible if the key names correspond to the current tuning,
-    or hidden if not.
-
-    It should run once after the key selectors are
-    generated, and then once any time the tuning changes.
+    Refresh the key spinner for the current tuning.
+    Delegates to refreshKeySpinner() which populates the shared
+    activeKeyChoices[] buffer and updates the MutableGEMSelect.
   */
 void showOnlyValidKeyChoices() {
-  for (int T = 0; T < TUNINGCOUNT; T++) {
-    menuItemKeys[T]->hide((T != current.tuningIndex));
-  }
-  sendToLog("menu: Key choices were updated.");
+  refreshKeySpinner();
 }
 
 void updateLayoutAndRotate() {
@@ -6089,7 +6136,7 @@ void changeTuning(GEMCallbackData callbackData) {
     // 3) Apply all values
     showOnlyValidLayoutChoices();                         // change list of choices in GEM Menu
     showOnlyValidScaleChoices();                          // change list of choices in GEM Menu
-    showOnlyValidKeyChoices();                            // change list of choices in GEM Menu
+    refreshKeySpinner();                                  // update key spinner for new tuning
     updateLayoutAndRotate();                              // apply changes above
     refreshMidiRouting();                                 // clear out MIDI queue and rebuild mapping
     resetSynthFreqs();
@@ -6127,12 +6174,10 @@ void createLayoutMenuItems() {
   showOnlyValidLayoutChoices();
 }
 void createKeyMenuItems() {
-  for (byte T = 0; T < TUNINGCOUNT; T++) {
-    selectKey[T] = new GEMSelect(tuningOptions[T].cycleLength, tuningOptions[T].keyChoices);
-    menuItemKeys[T] = new GEMItem("Key", current.keyStepsFromA, *selectKey[T], changeKey);
-    menuPageScales.addMenuItem(*menuItemKeys[T]);
-  }
-  showOnlyValidKeyChoices();
+  populateActiveKeyChoices(current.tuningIndex);
+  selectKey = new MutableGEMSelect(tuningOptions[current.tuningIndex].cycleLength, activeKeyChoices);
+  menuItemKey = new GEMItem("Key", current.keyStepsFromA, *selectKey, changeKey);
+  menuPageScales.addMenuItem(*menuItemKey);
 }
 void createScaleMenuItems() {
   for (int S = 0; S < scaleCount; S++) {  // create pointers to all scale items, filter them as you go
