@@ -92,20 +92,6 @@
 #define HARDWARE_V1_2 2
 byte Hardware_Version = 0;  // 0 = unknown, 1 = v1.1 board. 2 = v1.2 board.
 
-// Phase 0 migration harness flags (compile-time only)
-#ifndef HEX_PHASE0_ENABLE
-#define HEX_PHASE0_ENABLE 0
-#endif
-#ifndef HEX_PHASE0_DUMP_ON_BOOT
-#define HEX_PHASE0_DUMP_ON_BOOT 0
-#endif
-#ifndef HEX_PHASE0_APPLY_BASELINE_PRESET
-#define HEX_PHASE0_APPLY_BASELINE_PRESET 1
-#endif
-#ifndef HEX_PHASE0_FIXTURE_TAG
-#define HEX_PHASE0_FIXTURE_TAG "phase0-legacy"
-#endif
-
 // @helpers
 //might be redundant
 #define PRESSED_KEY_MAX 20
@@ -6513,123 +6499,6 @@ void setupHardware() {
   }
 }
 
-#if HEX_PHASE0_ENABLE
-static uint32_t phase0HashBytes(uint32_t hash, const uint8_t* bytes, size_t len) {
-  constexpr uint32_t FNV_PRIME = 16777619u;
-  for (size_t i = 0; i < len; ++i) {
-    hash ^= bytes[i];
-    hash *= FNV_PRIME;
-  }
-  return hash;
-}
-
-static uint32_t phase0HashU32(uint32_t hash, uint32_t value) {
-  uint8_t bytes[4];
-  bytes[0] = static_cast<uint8_t>(value & 0xFFu);
-  bytes[1] = static_cast<uint8_t>((value >> 8) & 0xFFu);
-  bytes[2] = static_cast<uint8_t>((value >> 16) & 0xFFu);
-  bytes[3] = static_cast<uint8_t>((value >> 24) & 0xFFu);
-  return phase0HashBytes(hash, bytes, sizeof(bytes));
-}
-
-static uint32_t phase0HashI32(uint32_t hash, int32_t value) {
-  return phase0HashU32(hash, static_cast<uint32_t>(value));
-}
-
-uint32_t phase0ComputeFixtureHash() {
-  uint32_t hash = 2166136261u;  // FNV-1a 32-bit offset basis
-  hash = phase0HashI32(hash, current.tuningIndex);
-  hash = phase0HashI32(hash, current.layoutIndex);
-  hash = phase0HashI32(hash, current.scaleIndex);
-  hash = phase0HashI32(hash, current.keyStepsFromA);
-  hash = phase0HashI32(hash, current.transpose);
-  for (int i = 0; i < BTN_COUNT; ++i) {
-    if (h[i].isCmd) continue;
-    uint32_t freqBits = 0;
-    static_assert(sizeof(freqBits) == sizeof(h[i].frequency), "float size must be 32-bit");
-    std::memcpy(&freqBits, &h[i].frequency, sizeof(freqBits));
-    hash = phase0HashI32(hash, i);
-    hash = phase0HashI32(hash, h[i].coordRow);
-    hash = phase0HashI32(hash, h[i].coordCol);
-    hash = phase0HashI32(hash, h[i].stepsFromC);
-    hash = phase0HashI32(hash, h[i].inScale ? 1 : 0);
-    hash = phase0HashI32(hash, h[i].note);
-    hash = phase0HashI32(hash, h[i].bend);
-    hash = phase0HashU32(hash, freqBits);
-    hash = phase0HashU32(hash, h[i].LEDcodeRest);
-    hash = phase0HashU32(hash, h[i].LEDcodePlay);
-    hash = phase0HashU32(hash, h[i].LEDcodeDim);
-    hash = phase0HashU32(hash, h[i].LEDcodeOff);
-    hash = phase0HashU32(hash, h[i].LEDcodeAnim);
-  }
-  return hash;
-}
-
-void phase0ApplyBaselinePreset() {
-  current.tuningIndex = TUNING_12EDO;
-  current.layoutIndex = current.layoutsBegin();
-  current.scaleIndex = 0;
-  current.keyStepsFromA = current.tuning().spanCtoA();
-  transposeSteps = 0;
-  current.transpose = 0;
-
-  // Follow the same apply order used by syncSettingsToRuntime() for consistency.
-  showOnlyValidLayoutChoices();
-  showOnlyValidScaleChoices();
-  showOnlyValidKeyChoices();
-  updateLayoutAndRotate();
-  refreshMidiRouting();
-  resetSynthFreqs();
-}
-
-void phase0DumpFixtureCsv(const char* fixtureTag) {
-  Serial.print("PHASE0_FIXTURE_BEGIN:");
-  Serial.println(fixtureTag);
-  Serial.println("fixture_tag,button_index,is_playable,coord_row,coord_col,steps_from_c,in_scale,note,bend,frequency_hz,led_rest,led_play,led_dim,led_off,led_anim");
-
-  char freqBuffer[24] = { 0 };
-  for (int i = 0; i < BTN_COUNT; ++i) {
-    if (h[i].isCmd) continue;
-    std::snprintf(freqBuffer, sizeof(freqBuffer), "%.6f", static_cast<double>(h[i].frequency));
-    Serial.print(fixtureTag);
-    Serial.print(',');
-    Serial.print(i);
-    Serial.print(",1,");
-    Serial.print(h[i].coordRow);
-    Serial.print(',');
-    Serial.print(h[i].coordCol);
-    Serial.print(',');
-    Serial.print(h[i].stepsFromC);
-    Serial.print(',');
-    Serial.print(h[i].inScale ? 1 : 0);
-    Serial.print(',');
-    Serial.print(h[i].note);
-    Serial.print(',');
-    Serial.print(h[i].bend);
-    Serial.print(',');
-    Serial.print(freqBuffer);
-    Serial.print(',');
-    Serial.print(h[i].LEDcodeRest);
-    Serial.print(',');
-    Serial.print(h[i].LEDcodePlay);
-    Serial.print(',');
-    Serial.print(h[i].LEDcodeDim);
-    Serial.print(',');
-    Serial.print(h[i].LEDcodeOff);
-    Serial.print(',');
-    Serial.println(h[i].LEDcodeAnim);
-  }
-
-  const uint32_t fixtureHash = phase0ComputeFixtureHash();
-  Serial.print("PHASE0_FIXTURE_END:");
-  Serial.println(fixtureTag);
-  Serial.print("PHASE0_FIXTURE_HASH:");
-  Serial.print(fixtureTag);
-  Serial.print(':');
-  Serial.println(fixtureHash);
-}
-#endif
-
 // @mainLoop
 /*
     An Arduino program runs
@@ -6670,14 +6539,6 @@ void setup() {
   initJIRatios();
   syncSettingsToRuntime();
   recomputePitchBendFactor();
-#if HEX_PHASE0_ENABLE
-#if HEX_PHASE0_DUMP_ON_BOOT
-#if HEX_PHASE0_APPLY_BASELINE_PRESET
-  phase0ApplyBaselinePreset();
-#endif
-  phase0DumpFixtureCsv(HEX_PHASE0_FIXTURE_TAG);
-#endif
-#endif
 }
 void loop() {        // run on first core
   timeTracker();     // Time tracking functions
