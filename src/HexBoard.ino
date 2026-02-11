@@ -6074,6 +6074,7 @@ void changeScale(GEMCallbackData callbackData) {  // when you change the scale v
   if (selection != current.scaleIndex) {
     current.scaleIndex = selection;
     settings[static_cast<uint8_t>(SettingKey::CurrentScale)] = selection;
+    markSettingsDirty();
     applyScale();
   }
   menuHome();
