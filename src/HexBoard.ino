@@ -4524,11 +4524,25 @@ bool fileSystemExists = false;
 void setupFileSystem() {
   Serial.begin(115200);
   LittleFSConfig cfg;
-  cfg.setAutoFormat(true);  // Format automatically if LittleFS cannot be mounted.
+  cfg.setAutoFormat(false);  // Don't auto-format; we handle it manually below.
   LittleFS.setConfig(cfg);
   fileSystemExists = LittleFS.begin();
   if (!fileSystemExists) {
-    sendToLog("Error: Unable to mount LittleFS.");
+    // Mount failed (first boot or corrupted FS). Let USB finish
+    // enumerating before erasing flash, since erase disables interrupts.
+    sendToLog("LittleFS mount failed. Formatting after USB settles...");
+    delay(3000);
+    if (LittleFS.format()) {
+      sendToLog("LittleFS format succeeded. Mounting...");
+      fileSystemExists = LittleFS.begin();
+      if (!fileSystemExists) {
+        sendToLog("Error: mount failed after format.");
+      } else {
+        sendToLog("LittleFS mounted successfully after format.");
+      }
+    } else {
+      sendToLog("Error: LittleFS format failed.");
+    }
   } else {
     sendToLog("LittleFS mounted successfully.");
   }

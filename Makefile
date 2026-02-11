@@ -1,4 +1,4 @@
-FQBN := rp2040:rp2040:generic:flash=16777216_15728640,freq=133,opt=Small,rtti=Disabled,stackprotect=Disabled,exceptions=Disabled,dbgport=Disabled,dbglvl=None,usbstack=tinyusb,boot2=boot2_generic_03h_2_padded_checksum
+FQBN := rp2040:rp2040:generic:flash=16777216_2097152,freq=133,opt=Small,rtti=Disabled,stackprotect=Disabled,exceptions=Disabled,dbgport=Disabled,dbglvl=None,usbstack=tinyusb,boot2=boot2_generic_03h_2_padded_checksum
 # Optional extra arduino-cli arguments.
 ARDUINO_EXTRA_ARGS ?=
 
