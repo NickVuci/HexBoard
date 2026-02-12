@@ -194,14 +194,14 @@ Where F is the best approximation of a perfect fifth in N steps. From this:
 | Function | Purpose |
 |----------|---------|
 | `bestStepsForRatio(N, ratio)` | Patent-val: `round(N × log₂(ratio))` |
-| `generateCustomTuning(slot, edo)` | Fills `tuningOptions[slot]` with stepSize = 1200/N, generates numeric key names |
+| `generateCustomTuning(slot, edo)` | Fills `tuningOptions[slot]` with stepSize = 1200/N; key names are generated on demand by `populateActiveKeyChoices()` |
 | `generateCustomLayouts(slot, edo)` | Computes 5 standard layouts (Bosanquet-Wilson, Harmonic Table, Wicki-Hayden, Janko, Full Gamut) for the given EDO |
 | `rebuildCustomKeySpinner(slot)` | Destroys and recreates the GEM key selector widget for updated tuning |
 
 ### Static Buffers
 
-Three large static buffer pools hold the generated names and values:
-- `customKeyNameBuf[12][87][4]` — key name strings
+Static buffer pools hold the generated names and values:
+- `customKeyNameBuf[87][4]` — shared key name buffer for the currently-active custom tuning, regenerated on demand by `populateActiveKeyChoices()` *(Refactored from `[12][87][4]` — saved ~3.8 KB RAM.)*
 - `customTuningNameBuf[12][18]` — tuning display names
 - `customEdoValues[12]` — stored EDO value per slot
 
@@ -507,7 +507,7 @@ Runs on **Core 1 via hardware alarm at ~41 kHz** (~24 µs budget per sample, lin
 
 ### Direction System
 
-6 hex directions with precomputed `vertical[]` and `horizontal[]` offset arrays for neighbor traversal.
+6 hex directions with precomputed `const` `vertical[]` and `horizontal[]` offset arrays for neighbor traversal. Orbit animation uses precomputed `static const` `orbitRowOffsets[12]` / `orbitColOffsets[12]` arrays at file scope, eliminating per-frame recomputation.
 
 ### Animation Types
 
@@ -695,7 +695,7 @@ Continuously polls the rotary encoder (`readKnob()`).
 |-------|------------|--------|
 | ~~`tuningDef` has `SelectOptionInt[87]` × 13 tunings~~ | ~~Move to dynamically allocated only for the active tuning, or use PROGMEM~~ | **DONE** — replaced 13 per-tuning `keyChoices[87]` arrays (~9 KB) with a single shared `activeKeyChoices[87]` buffer (696 bytes) populated on-the-fly. Added `MutableGEMSelect` subclass for in-place option updates. Saved ~8.3 KB RAM. |
 | ~~General MIDI + Roland MT-32 instrument name tables~~ | ~~Store in flash with `__in_flash()`~~ | **DONE** — tables placed in flash via `__in_flash("midi")` |
-| `customKeyNameBuf[12][87][4]` = 4,176 bytes static | Allocate only for used custom tuning slots | Open (~3.5 KB) |
+| ~~`customKeyNameBuf[12][87][4]` = 4,176 bytes static~~ | ~~Allocate only for used custom tuning slots~~ | **DONE** — replaced with single shared `customKeyNameBuf[87][4]` (348 bytes) regenerated on demand by `populateActiveKeyChoices()`. Saved ~3.8 KB RAM. |
 | ~~`midiNoteToHexIndices` uses `std::vector<uint8_t>` × 128~~ | ~~Use a flat array with fixed max~~ | **DONE** — replaced with `uint8_t[128][16]` + count array |
 | ~~`pressedKeyIDs` as `std::vector<byte>`~~ | ~~Use fixed-size array with count~~ | **DONE** — replaced with `byte[20]` + `pressedKeyCount` |
 | ~~`mpeAvailableChannels` as `std::vector<byte>`~~ | ~~Use a 16-bit bitmap~~ | **DONE** — replaced with `uint16_t mpeChannelBitmap` + `__builtin_ctz()` |
@@ -707,8 +707,8 @@ Continuously polls the rotary encoder (`readKnob()`).
 | ~~`setLEDcolorCodes()` does heavy float math per button for some modes~~ | ~~Precompute per **scale degree** (at most 87) rather than per button (140). Many buttons share the same scale degree.~~ | **DONE** — per-degree precomputation implemented via `DegreeLED degreeLEDs[MAX_SCALE_DIVISIONS]`; heavy float math now runs once per degree, not per button. |
 | ~~`sendToLog()` uses `std::string` concatenation~~ | ~~Guard string construction before building the string~~ | **DONE** — converted to macro; string args never evaluated when `debugMessages` is false |
 | ~~`justIntonationRetune()` linear scan of ~330 ratios~~ | ~~Precompute a lookup table indexed by interval class (at most `cycleLength` entries). For 12-EDO, that's 12 pre-resolved ratios.~~ | **DONE** — `jiDeviationCache[1025]` built at tuning-change time by `buildJICache()`, giving O(1) lookup. Linear scan remains only as a fallback for extreme intervals (>±512 steps). |
-| `poll()` ISR uses `int64_t` multiplication | Profile to ensure the full 8-voice mix completes within the 24 µs budget. Consider fixed-point `int32_t` arithmetic with bit-shifting. | Open |
-| `animateOrbit()` / `animateRadial()` recompute neighbor offsets each frame | Cache neighbor coordinate lists at layout-change time | Open |
+| `poll()` ISR uses `int64_t` multiplication | Profile to ensure the full 8-voice mix completes within the 24 µs budget. Consider fixed-point `int32_t` arithmetic with bit-shifting. | **Partial** — output scaling (attenuation × velocity) converted to `int32_t` (provably safe, values fit with ~100× headroom). Envelope multiply remains `int64_t` — can be reduced to 12-bit precision later if ISR headroom is needed for new features. |
+| ~~`animateOrbit()` / `animateRadial()` recompute neighbor offsets each frame~~ | ~~Cache neighbor coordinate lists at layout-change time~~ | **DONE** — `animateOrbit()` offsets moved to precomputed `static const` arrays. `animateRadial()` offsets depend on per-frame radius so caching doesn't apply; `vertical[]`/`horizontal[]` made `const`. |
 
 ### 4. Architectural Improvements
 
@@ -718,7 +718,7 @@ Continuously polls the rotary encoder (`readKnob()`).
 | **`SettingKey` enum + `factoryDefaults[]` manual sync** | Use a struct or X-macro pattern so each setting's key, default, type, and variable pointer are defined in one place. This eliminates the risk of index mismatches. |
 | **Envelope commands via 8 separate atomics** | Replace with a single lock-free SPSC ring buffer for commands. Simpler, more cache-friendly, and eliminates the retry/pending release mechanism. |
 | **`universalSaveCallback()` + `PersistentCallbackInfo` pattern** | Clean and well-designed, but the `reader` function pointer adds indirection. Consider a template-based approach for compile-time dispatch. |
-| **Magic numbers scattered in color computations** | Define named constants for the Munsell hue correction points, blackbody temperature ranges, and MOS layer thresholds. |
+| ~~**Magic numbers scattered in color computations**~~ | ~~Define named constants for the Munsell hue correction points, blackbody temperature ranges, and MOS layer thresholds.~~ **DONE** — added `INCANDESCENT_BASE_TEMP`, `DIATONIC_HUE_STEP`, `DIATONIC_LAYER_DIM`, `PIANO_DEVIATION_SCALE`, `PIANO_ALT_HUE_OFFSET`, `ALT_CENTER_*` interval constants, `ALT_HUE_DEVIATION_COEFF`, `ALT_PERFECT_HUE_SHIFT`, `ALT_DESAT_THRESHOLD`. |
 
 ### 5. Code Size Reduction
 
