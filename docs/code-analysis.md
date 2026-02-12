@@ -1,6 +1,6 @@
 # HexBoard.ino — Code Documentation & Analysis
 
-> **File:** `src/HexBoard.ino` | **Lines:** ~6,024 | **License:** GPL v3 (2022–2025)
+> **File:** `src/HexBoard.ino` | **Lines:** ~6,613 | **License:** GPL v3 (2022–2025)
 > **Hardware:** Generic RP2040 @ 133 MHz, 16 MB flash, NeoPixels, SH1107 OLED, rotary encoder, piezo + audio jack
 
 ---
@@ -35,7 +35,7 @@
 
 ## Architecture Overview
 
-HexBoard is a **hexagonal isomorphic MIDI controller and synthesizer** running on a dual-core RP2040 microcontroller. The entire codebase lives in a single `.ino` file (intentionally — to avoid Arduino IDE multi-file compilation quirks), totaling 6,479 lines.
+HexBoard is a **hexagonal isomorphic MIDI controller and synthesizer** running on a dual-core RP2040 microcontroller. The entire codebase lives in a single `.ino` file (intentionally — to avoid Arduino IDE multi-file compilation quirks), totaling ~6,613 lines.
 
 ### Dual-Core Model
 
@@ -562,7 +562,7 @@ Binary file `/settings.dat` on LittleFS:
 
 | Section | Content |
 |---------|---------|
-| Header (5 bytes) | Magic "STG" + version byte (currently 3) + default profile index |
+| Header (5 bytes) | Magic "STG" + version byte (currently 4) + default profile index |
 | Profiles | 9 profiles × `NUM_SETTINGS` bytes each |
 
 ### `SettingKey` Enum (line 4272)
@@ -704,9 +704,9 @@ Continuously polls the rotary encoder (`readKnob()`).
 
 | Issue | Suggestion | Status |
 |-------|------------|--------|
-| `setLEDcolorCodes()` does heavy float math per button for some modes | Precompute per **scale degree** (at most 87) rather than per button (140). Many buttons share the same scale degree. | Open |
+| ~~`setLEDcolorCodes()` does heavy float math per button for some modes~~ | ~~Precompute per **scale degree** (at most 87) rather than per button (140). Many buttons share the same scale degree.~~ | **DONE** — per-degree precomputation implemented via `DegreeLED degreeLEDs[MAX_SCALE_DIVISIONS]`; heavy float math now runs once per degree, not per button. |
 | ~~`sendToLog()` uses `std::string` concatenation~~ | ~~Guard string construction before building the string~~ | **DONE** — converted to macro; string args never evaluated when `debugMessages` is false |
-| `justIntonationRetune()` linear scan of ~330 ratios | Precompute a lookup table indexed by interval class (at most `cycleLength` entries). For 12-EDO, that's 12 pre-resolved ratios. | Open |
+| ~~`justIntonationRetune()` linear scan of ~330 ratios~~ | ~~Precompute a lookup table indexed by interval class (at most `cycleLength` entries). For 12-EDO, that's 12 pre-resolved ratios.~~ | **DONE** — `jiDeviationCache[1025]` built at tuning-change time by `buildJICache()`, giving O(1) lookup. Linear scan remains only as a fallback for extreme intervals (>±512 steps). |
 | `poll()` ISR uses `int64_t` multiplication | Profile to ensure the full 8-voice mix completes within the 24 µs budget. Consider fixed-point `int32_t` arithmetic with bit-shifting. | Open |
 | `animateOrbit()` / `animateRadial()` recompute neighbor offsets each frame | Cache neighbor coordinate lists at layout-change time | Open |
 
@@ -714,7 +714,7 @@ Continuously polls the rotary encoder (`readKnob()`).
 
 | Issue | Suggestion |
 |-------|------------|
-| **Single ~6,024-line file** | The `@tag` comments already section the code. Splitting into headers per section (as the authors note they intend to do) would vastly improve maintainability. Arduino 2.x and PlatformIO handle multi-file projects correctly. |
+| **Single ~6,613-line file** | The `@tag` comments already section the code. Splitting into headers per section (as the authors note they intend to do) would vastly improve maintainability. Arduino 2.x and PlatformIO handle multi-file projects correctly. |
 | **`SettingKey` enum + `factoryDefaults[]` manual sync** | Use a struct or X-macro pattern so each setting's key, default, type, and variable pointer are defined in one place. This eliminates the risk of index mismatches. |
 | **Envelope commands via 8 separate atomics** | Replace with a single lock-free SPSC ring buffer for commands. Simpler, more cache-friendly, and eliminates the retry/pending release mechanism. |
 | **`universalSaveCallback()` + `PersistentCallbackInfo` pattern** | Clean and well-designed, but the `reader` function pointer adds indirection. Consider a template-based approach for compile-time dispatch. |
@@ -726,14 +726,14 @@ Continuously polls the rotary encoder (`readKnob()`).
 |--------|-----------|--------|
 | ~~Generate transpose spinner programmatically~~ | ~~Loop in `setupMenu()`~~ | **DONE** — saved ~240 lines of hardcoded entries |
 | ~~Consolidate duplicate ratio entries in JI table~~ | ~~Deduplicate~~ | **DONE** — removed 18 duplicate lines |
-| Extract shared LED computation into helper | Refactor `setLEDcolorCodes()` | Open |
+| ~~Extract shared LED computation into helper~~ | ~~Refactor `setLEDcolorCodes()`~~ | **DONE** — per-degree precomputation eliminates redundant per-button math. Further cosmetic extraction of helpers is optional. |
 | ~~Move instrument name tables to flash~~ | ~~`__in_flash()`~~ | **DONE** |
 
 ### 6. Robustness
 
 | Issue | Suggestion | Status |
 |-------|------------|--------|
-| `load_settings()` trusts file size after magic check | Add CRC32 checksum to settings header | Open |
+| ~~`load_settings()` trusts file size after magic check~~ | ~~Add CRC32 checksum to settings header~~ | **DONE** — CRC32 implemented with verification on load and computation on save. Settings version bumped to 4. |
 | ~~No bounds checking on `layoutIndex`, `scaleIndex`, `tuningIndex` in `presetDef`~~ | ~~Add clamping in accessors~~ | **DONE** — `constrain()` added to `tuning()`, `layout()`, `scale()` |
 | ~~`mpeAvailableChannels` can be empty if range is misconfigured~~ | ~~Handle empty pool gracefully~~ | **DONE** — bitmap returns 0 when empty (`mpeChannelBitmap == 0` check) |
-| `poll()` ISR has no watchdog/timing check | Add a cycle counter to detect overruns in debug mode | Open |
+| ~~`poll()` ISR has no watchdog/timing check~~ | ~~Add a cycle counter to detect overruns in debug mode~~ | **DONE** — ISR cycle profiling tracks min/max/average µs per invocation with atomic read-and-reset via `readAndResetISRProfile()`. |

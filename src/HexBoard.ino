@@ -497,9 +497,10 @@ tuningDef tuningOptions[] = {
     The best minor third m3 = round(N * log2(6/5))
 */
 
-// Static string buffer pool for custom key names.
-// 12 slots * 87 keys * 4 chars each ("0"-"86" + null) = 4176 bytes.
-char customKeyNameBuf[CUSTOM_TUNING_COUNT][MAX_SCALE_DIVISIONS][4];
+// Shared string buffer for the currently-active custom tuning's key names.
+// Only one slot is displayed at a time; names are regenerated on demand
+// by populateActiveKeyChoices(). 87 keys * 4 chars = 348 bytes.
+char customKeyNameBuf[MAX_SCALE_DIVISIONS][4];
 
 // Static string buffers for custom tuning display names.
 // e.g. "Custom 1: 31EDO" — 17 char GEM limit + null
@@ -521,9 +522,10 @@ void populateActiveKeyChoices(byte tuningIdx) {
       activeKeyChoices[i].val_int = edo12KeyValues[i];
     }
   } else {
-    byte slotIndex = tuningIdx - TUNING_CUSTOM_1;
+    // Regenerate numeric key names for this tuning's cycle length
     for (byte i = 0; i < len && i < MAX_SCALE_DIVISIONS; i++) {
-      activeKeyChoices[i].name = customKeyNameBuf[slotIndex][i];
+      snprintf(customKeyNameBuf[i], 4, "%d", i);
+      activeKeyChoices[i].name = customKeyNameBuf[i];
       activeKeyChoices[i].val_int = (int)i;
     }
   }
@@ -564,12 +566,8 @@ void generateCustomTuning(byte slotIndex, byte edoDivisions) {
   t.cycleLength = edoDivisions;
   t.stepSize = 1200.0f / (float)edoDivisions;
 
-  // Generate numeric key names in the string buffer pool.
-  // These are read later by populateActiveKeyChoices() when
-  // this tuning becomes active.
-  for (byte i = 0; i < edoDivisions; i++) {
-    snprintf(customKeyNameBuf[slotIndex][i], 4, "%d", i);
-  }
+  // Key names are now generated on demand by populateActiveKeyChoices()
+  // when this tuning becomes active, using the shared customKeyNameBuf[].
 
   // Custom EDOs always have stepsFromCtoA = 0 (key "0" = A)
   t.stepsFromCtoA = 0;
