@@ -892,6 +892,39 @@ const byte scaleCount = sizeof(scaleOptions) / sizeof(scaleDef);
 #define HUE_INDIGO 252.0
 #define HUE_PURPLE 288.0
 #define HUE_MAGENTA 324.0
+
+// ---- Diatonic color mode layer constants ----
+// Hue rotation per MOS layer (degrees between sharp/flat shading layers)
+#define DIATONIC_HUE_STEP 36.0f
+// Value dimming per layer beyond the first (subtracted from VALUE_NORMAL)
+#define DIATONIC_LAYER_DIM 16
+
+// ---- Incandescent color mode constants ----
+// Minimum blackbody temperature for incandescent palette (Kelvin)
+#define INCANDESCENT_BASE_TEMP 800
+
+// ---- Piano color mode constants ----
+// Deviation scaling factor: maps fractional key distance to 0-255 tint range
+// Formula: deviation * 3072 / 12 = deviation * 256 (spread across 12 semitones)
+#define PIANO_DEVIATION_SCALE 3072.0f
+// Hue offset applied to piano alt warm/cool split (degrees)
+#define PIANO_ALT_HUE_OFFSET 30.0f
+
+// ---- Alternate (Fox/Giedraitis) color mode constants ----
+// Just intonation interval centers (cents) for hue mapping
+#define ALT_CENTER_UNISON    0.0f
+#define ALT_CENTER_MINOR2    147.1f    // ~midpoint between 16/15 and 9/8
+#define ALT_CENTER_MINOR3    351.0f    // ~6/5 = 315.6c, adjusted
+#define ALT_CENTER_FOURTH    498.0f    // 4/3
+#define ALT_CENTER_FIFTH     702.0f    // 3/2
+#define ALT_CENTER_MAJOR6    849.0f    // ~5/3 = 884.4c, adjusted
+#define ALT_CENTER_MAJOR7   1053.0f    // ~15/8 region
+// Hue rotation coefficient for off-center deviation
+#define ALT_HUE_DEVIATION_COEFF 1.44f
+// Perfect-interval hue shift (degrees) for consonance highlighting
+#define ALT_PERFECT_HUE_SHIFT 72
+// Desaturation threshold (cents from center) for perfect intervals
+#define ALT_DESAT_THRESHOLD 20
 /*
     This class is a basic hue, saturation,
     and value triplet, with some limited
@@ -1567,10 +1600,10 @@ void setLEDcolorCodes() {
           float keyDeg = (12.0f / octaveCycleLength) * semipaletteIndex;
           if ((int)round(keyDeg) % 12 == 1 || (int)round(keyDeg) % 12 == 3 || (int)round(keyDeg) % 12 == 6 || (int)round(keyDeg) % 12 == 8 || (int)round(keyDeg) % 12 == 10) {
             float deviationFromDiatonic = (float)((int)round(keyDeg) - keyDeg) * 180.0;
-            setColor = { fmodf(360.0 + 180.0 + 30.0 + deviationFromDiatonic, 360.0f), SAT_VIVID, VALUE_NORMAL };
+            setColor = { fmodf(360.0 + 180.0 + PIANO_ALT_HUE_OFFSET + deviationFromDiatonic, 360.0f), SAT_VIVID, VALUE_NORMAL };
           } else {
             float deviationFromDiatonic = (((float)((int)round(keyDeg))) - (keyDeg)) * 180.0;
-            setColor = { fmodf(360.0 + 0.0 + 30.0 + deviationFromDiatonic, 360.0f), SAT_VIVID, VALUE_NORMAL };
+            setColor = { fmodf(360.0 + 0.0 + PIANO_ALT_HUE_OFFSET + deviationFromDiatonic, 360.0f), SAT_VIVID, VALUE_NORMAL };
           }
         }
         break;
@@ -1580,12 +1613,12 @@ void setLEDcolorCodes() {
           float semipaletteIndex = fmodf(degree + (octaveCycleLength * 256.0), octaveCycleLength);
           float keyDeg = (12.0f / octaveCycleLength) * semipaletteIndex;
           if ((int)round(keyDeg) % 12 == 1 || (int)round(keyDeg) % 12 == 3 || (int)round(keyDeg) % 12 == 6 || (int)round(keyDeg) % 12 == 8 || (int)round(keyDeg) % 12 == 10) {
-            float deviationFromDiatonic = ((float)((int)round(keyDeg) - keyDeg) * 3072.0f) / 12.0;
+            float deviationFromDiatonic = ((float)((int)round(keyDeg) - keyDeg) * PIANO_DEVIATION_SCALE) / 12.0;
             uint8_t tint = (uint8_t)(abs(round(deviationFromDiatonic)));
             tint = strip.gamma8(tint);
             setColor = { 360 * (fmodf(round(keyDeg), 12.0f) / 12.0f), SAT_TINT, VALUE_BLACK };
           } else {
-            float deviationFromDiatonic = ((((float)((int)round(keyDeg))) - (keyDeg)) * 3072.0f) / 12.0;
+            float deviationFromDiatonic = ((((float)((int)round(keyDeg))) - (keyDeg)) * PIANO_DEVIATION_SCALE) / 12.0;
             uint8_t tint = 255 - (uint8_t)(abs(round(deviationFromDiatonic)));
             tint = strip.gamma8(tint);
             setColor = { 360 * (fmodf(round(keyDeg), 12.0f) / 12.0f), SAT_TINT, VALUE_NORMAL };
@@ -1603,7 +1636,7 @@ void setLEDcolorCodes() {
           } else {
             deviationFromDiatonic = 1.0 - abs(round(keyDeg) - keyDeg);
           }
-          auto baseTemperature = 800;
+          auto baseTemperature = INCANDESCENT_BASE_TEMP;
           float tint = ((sqrt(deviationFromDiatonic))) * (incandescence::maxTemperature - baseTemperature) + baseTemperature;
           setColor = incandescence::getColor(tint);
         }
@@ -1613,21 +1646,21 @@ void setLEDcolorCodes() {
           float cents = current.tuning().stepSize * paletteIndex;
           bool perf = 0;
           float center = 0.0;
-          if (cents < 50) { perf = 1; center = 0.0; }
-          else if ((cents >= 50) && (cents < 250)) { center = 147.1; }
-          else if ((cents >= 250) && (cents < 450)) { center = 351.0; }
-          else if ((cents >= 450) && (cents < 600)) { perf = 1; center = 498.0; }
-          else if ((cents >= 600) && (cents <= 750)) { perf = 1; center = 702.0; }
-          else if ((cents > 750) && (cents <= 950)) { center = 849.0; }
-          else if ((cents > 950) && (cents <= 1150)) { center = 1053.0; }
-          else if ((cents > 1150) && (cents < 1250)) { perf = 1; center = 1200.0; }
-          else if ((cents >= 1250) && (cents < 1450)) { center = 1347.1; }
-          else if ((cents >= 1450) && (cents < 1650)) { center = 1551.0; }
-          else if ((cents >= 1650) && (cents < 1850)) { perf = 1; center = 1698.0; }
-          else if ((cents >= 1800) && (cents <= 1950)) { perf = 1; center = 1902.0; }
+          if (cents < 50) { perf = 1; center = ALT_CENTER_UNISON; }
+          else if ((cents >= 50) && (cents < 250)) { center = ALT_CENTER_MINOR2; }
+          else if ((cents >= 250) && (cents < 450)) { center = ALT_CENTER_MINOR3; }
+          else if ((cents >= 450) && (cents < 600)) { perf = 1; center = ALT_CENTER_FOURTH; }
+          else if ((cents >= 600) && (cents <= 750)) { perf = 1; center = ALT_CENTER_FIFTH; }
+          else if ((cents > 750) && (cents <= 950)) { center = ALT_CENTER_MAJOR6; }
+          else if ((cents > 950) && (cents <= 1150)) { center = ALT_CENTER_MAJOR7; }
+          else if ((cents > 1150) && (cents < 1250)) { perf = 1; center = 1200.0f; }  // octave
+          else if ((cents >= 1250) && (cents < 1450)) { center = 1200.0f + ALT_CENTER_MINOR2; }
+          else if ((cents >= 1450) && (cents < 1650)) { center = 1200.0f + ALT_CENTER_MINOR3; }
+          else if ((cents >= 1650) && (cents < 1850)) { perf = 1; center = 1200.0f + ALT_CENTER_FOURTH; }
+          else if ((cents >= 1800) && (cents <= 1950)) { perf = 1; center = 1200.0f + ALT_CENTER_FIFTH; }
           float offCenter = cents - center;
-          int16_t altHue = positiveMod((int)(150 + (perf * ((offCenter > 0) ? -72 : 72)) - round(1.44 * offCenter)), 360);
-          float deSaturate = perf * (abs(offCenter) < 20) * (1 - (0.02 * abs(offCenter)));
+          int16_t altHue = positiveMod((int)(150 + (perf * ((offCenter > 0) ? -ALT_PERFECT_HUE_SHIFT : ALT_PERFECT_HUE_SHIFT)) - round(ALT_HUE_DEVIATION_COEFF * offCenter)), 360);
+          float deSaturate = perf * (abs(offCenter) < ALT_DESAT_THRESHOLD) * (1 - (0.02 * abs(offCenter)));
           setColor = {
             (float)altHue,
             (byte)(255 - round(255 * deSaturate)),
@@ -1648,13 +1681,13 @@ void setLEDcolorCodes() {
             } else if (equi) {
               setColor = { HUE_PURPLE, SAT_DULL, VALUE_NORMAL };
             } else if (layer > 0) {
-              float hue = fmodf(360.0f + HUE_ORANGE - (float)(layer - 1) * 36.0f, 360.0f);
-              byte val = (byte)max((int)VALUE_SHADE, (int)VALUE_NORMAL - (layer - 1) * 16);
+              float hue = fmodf(360.0f + HUE_ORANGE - (float)(layer - 1) * DIATONIC_HUE_STEP, 360.0f);
+              byte val = (byte)max((int)VALUE_SHADE, (int)VALUE_NORMAL - (layer - 1) * DIATONIC_LAYER_DIM);
               setColor = { hue, SAT_VIVID, val };
             } else {
               int absLayer = -layer;
-              float hue = fmodf(HUE_BLUE + (float)(absLayer - 1) * 36.0f, 360.0f);
-              byte val = (byte)max((int)VALUE_SHADE, (int)VALUE_NORMAL - (absLayer - 1) * 16);
+              float hue = fmodf(HUE_BLUE + (float)(absLayer - 1) * DIATONIC_HUE_STEP, 360.0f);
+              byte val = (byte)max((int)VALUE_SHADE, (int)VALUE_NORMAL - (absLayer - 1) * DIATONIC_LAYER_DIM);
               setColor = { hue, SAT_VIVID, val };
             }
           }
